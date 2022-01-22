@@ -4,7 +4,7 @@ use regex::Regex;
 use std::env;
 fn main() {
     let args = env::args().collect::<Vec<String>>();
-    assert!(args.len() < 2, "Usage: rust-selection-sort REGEX SEL1 [SEL2 ...]");
+    assert!(args.len() > 2, "Usage: rust-selection-sort REGEX SEL1 [SEL2 ...]");
 
     let replacement_re = &args[1];
 
@@ -28,9 +28,13 @@ fn main() {
         a.cmp(b)
     });
 
+    print!("reg '\"'");
     for i in &zipped {
-        print!("{}\0", i.0);
+        let new_selection = i.0.replace("'", "''");
+        print!(" '{}'", new_selection);
+        // print!("{}\0", new_selection);
         // TODO: Allow debugging with -d
         // println!("\n\tSort key: {:?}", i.1);
     }
+    print!(" ;");
 }

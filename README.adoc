@@ -1,0 +1,18 @@
+= rust-selection-sort.kak
+
+== Configuration
+
+[source,title='kakrc']
+----
+define-command s -params 0..1 %{
+    eval -save-regs '"' %{
+        reg dquote %val{selections}
+        eval %sh{
+            regex="${1:-.*}"
+            eval set -- "$kak_quoted_selections"
+            ~/syncthing/code/rust-selection-sort.kak/target/debug/rust-selection-sort "$regex" "$@" > "$kak_command_fifo"
+        }
+        exec R
+    }
+}
+----
