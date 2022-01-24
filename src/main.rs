@@ -44,12 +44,7 @@ fn send_message(msg: &KakMessage) {
 }
 
 fn run() -> Result<(), KakMessage> {
-    let options = Options::try_parse().map_err(|e| {
-        KakMessage(
-            "Error parsing arguments".to_string(),
-            Some(format!("Could not parse: {:?}", e)),
-        )
-    })?;
+    let options = Options::try_parse()?;
 
     let replacement_re = options.regex;
 
@@ -112,6 +107,15 @@ impl From<std::io::Error> for KakMessage {
         Self(
             "Error writing to fifo".to_string(),
             Some(format!("{:?}", err)),
+        )
+    }
+}
+
+impl From<clap::Error> for KakMessage {
+    fn from(err: clap::Error) -> Self {
+        Self(
+            "Error parsing arguments".to_string(),
+            Some(format!("{:?}", err)), // Some(err.message.pieces.map(|p| p.0).join()),
         )
     }
 }
