@@ -3,15 +3,12 @@
 use alphanumeric_sort::compare_str;
 use clap::Parser;
 use regex::Regex;
-use std::path::PathBuf;
 
 struct KakMessage(String, Option<String>);
 
 #[derive(Parser)]
 #[clap(about, version, author)]
 struct Options {
-    #[clap(short, long)]
-    fifo_name: PathBuf,
     #[clap(short = 'S', long)]
     // TODO: Can we invert a boolean? This name is terrible
     no_skip_whitespace: bool,
