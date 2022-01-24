@@ -3,12 +3,15 @@
 use alphanumeric_sort::compare_str;
 use clap::Parser;
 use regex::Regex;
+use std::path::PathBuf;
 
-type KakMessage = (String, Option<String>);
+struct KakMessage(String, Option<String>);
 
 #[derive(Parser)]
 #[clap(about, version, author)]
 struct Options {
+    #[clap(short, long)]
+    fifo_name: PathBuf,
     #[clap(short = 'S', long)]
     // TODO: Can we invert a boolean? This name is terrible
     no_skip_whitespace: bool,
@@ -24,7 +27,7 @@ struct Options {
 
 fn main() {
     match run() {
-        Ok(()) => send_message(&("Replaced successfully".to_string(), None)),
+        Ok(()) => send_message(&KakMessage("Replaced successfully".to_string(), None)),
         Err(msg) => send_message(&msg),
     }
 }
@@ -42,7 +45,7 @@ fn send_message(msg: &KakMessage) {
 
 fn run() -> Result<(), KakMessage> {
     let options = Options::try_parse().map_err(|e| {
-        (
+        KakMessage(
             "Error parsing arguments".to_string(),
             Some(format!("Could not parse: {:?}", e)),
         )
@@ -50,12 +53,8 @@ fn run() -> Result<(), KakMessage> {
 
     let replacement_re = options.regex;
 
-    let re = Regex::new(&replacement_re).map_err(|_| {
-        (
-            format!("Invalid regular expression: {}", replacement_re),
-            None,
-        )
-    })?;
+    let re = Regex::new(&replacement_re)
+        .map_err(|_| format!("Invalid regular expression: {}", replacement_re))?;
 
     let mut zipped = options
         .selections
@@ -106,4 +105,19 @@ fn run() -> Result<(), KakMessage> {
     }
     print!(" ;");
     Ok(())
+}
+
+impl From<std::io::Error> for KakMessage {
+    fn from(err: std::io::Error) -> Self {
+        Self(
+            "Error writing to fifo".to_string(),
+            Some(format!("{:?}", err)),
+        )
+    }
+}
+
+impl From<String> for KakMessage {
+    fn from(err: String) -> Self {
+        Self(err, None)
+    }
 }
