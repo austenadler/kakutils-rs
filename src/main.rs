@@ -12,12 +12,14 @@ struct Options {
     #[clap(short = 'S', long)]
     // TODO: Can we invert a boolean? This name is terrible
     no_skip_whitespace: bool,
-    #[clap(short, long, required = true)]
+    #[clap(short = 'R', long, required = true)]
     regex: String,
     #[clap(multiple_occurrences = true, required = true)]
     selections: Vec<String>,
     #[clap(short, long)]
     lexicographic_sort: bool,
+    #[clap(short, long)]
+    reverse: bool,
 }
 
 fn main() {
@@ -91,7 +93,14 @@ fn run() -> Result<(), KakMessage> {
     });
 
     print!("reg '\"'");
-    for i in &zipped {
+
+    let iter: Box<dyn Iterator<Item = _>> = if options.reverse {
+        Box::new(zipped.iter().rev())
+    } else {
+        Box::new(zipped.iter())
+    };
+
+    for i in iter {
         let new_selection = i.0.replace('\'', "''");
         print!(" '{}'", new_selection);
     }
