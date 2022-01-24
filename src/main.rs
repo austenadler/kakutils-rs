@@ -1,5 +1,6 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
 
+use alphanumeric_sort::compare_str;
 use clap::Parser;
 use regex::Regex;
 
@@ -15,6 +16,8 @@ struct Options {
     regex: String,
     #[clap(multiple_occurrences = true, required = true)]
     selections: Vec<String>,
+    #[clap(short, long)]
+    lexicographic_sort: bool,
 }
 
 fn main() {
@@ -25,6 +28,7 @@ fn main() {
 }
 
 fn send_message(msg: &KakMessage) {
+    // TODO: This isn't echoing anything
     let msg_str = msg.0.replace('\'', "''");
     print!("echo '{}';", msg_str);
 
@@ -78,7 +82,12 @@ fn run() -> Result<(), KakMessage> {
     zipped.sort_by(|(a, a_key), (b, b_key)| {
         let a = a_key.unwrap_or(a);
         let b = b_key.unwrap_or(b);
-        a.cmp(b)
+
+        if options.lexicographic_sort {
+            a.cmp(b)
+        } else {
+            compare_str(a, b)
+        }
     });
 
     print!("reg '\"'");

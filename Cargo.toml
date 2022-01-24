@@ -11,6 +11,7 @@ keywords = ["cli", "kakoune"]
 [dependencies]
 regex = "1"
 clap = {version = "3", features = ["derive"]}
+alphanumeric-sort = "1"
 
 [profile.release]
 lto = true
