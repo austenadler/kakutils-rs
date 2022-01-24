@@ -3,13 +3,14 @@
 use clap::Parser;
 use regex::Regex;
 
+type KakMessage = (String, Option<String>);
+
 #[derive(Parser)]
 #[clap(about, version, author)]
 struct Options {
     #[clap(short = 'S', long)]
+    // TODO: Can we invert a boolean? This name is terrible
     no_skip_whitespace: bool,
-    // #[clap(short, long)]
-    // debug: bool,
     #[clap(short, long, required = true)]
     regex: String,
     #[clap(multiple_occurrences = true, required = true)]
@@ -17,38 +18,61 @@ struct Options {
 }
 
 fn main() {
-    if let Err(msg) = run() {
-        output_message(&msg, false);
+    match run() {
+        Ok(()) => send_message(&("Replaced successfully".to_string(), None)),
+        Err(msg) => send_message(&msg),
     }
 }
 
-fn output_message(msg: &str, debug: bool) {
-    println!(
-        "echo{}'{}';",
-        if debug { " -debug" } else { " " },
-        msg.replace("'", "''")
-    );
+fn send_message(msg: &KakMessage) {
+    let msg_str = msg.0.replace('\'', "''");
+    print!("echo '{}';", msg_str);
+
+    if let Some(debug_info) = &msg.1 {
+        print!("echo -debug '{}';", msg_str);
+        print!("echo -debug '{}';", debug_info.replace('\'', "''"));
+    }
 }
 
-fn run() -> Result<(), String> {
-    let options = Options::try_parse().map_err(|e| format!("Error: {:?}", e))?;
+fn run() -> Result<(), KakMessage> {
+    let options = Options::try_parse().map_err(|e| {
+        (
+            "Error parsing arguments".to_string(),
+            Some(format!("Could not parse: {:?}", e)),
+        )
+    })?;
 
     let replacement_re = options.regex;
 
-    let re = Regex::new(&replacement_re)
-        .map_err(|_| format!("Invalid regular expression: {}", replacement_re))?;
+    let re = Regex::new(&replacement_re).map_err(|_| {
+        (
+            format!("Invalid regular expression: {}", replacement_re),
+            None,
+        )
+    })?;
 
     let mut zipped = options
         .selections
         .iter()
-        .skip(2)
-        .zip(options.selections.iter().skip(2).map(|a| {
-            let captures = re.captures(a)?;
-            captures
-                .get(1)
-                .or_else(|| captures.get(0))
-                .map(|m| m.as_str())
-        }))
+        .zip(
+            options
+                .selections
+                .iter()
+                .map(|a| {
+                    if options.no_skip_whitespace {
+                        a
+                    } else {
+                        a.trim()
+                    }
+                })
+                .map(|a| {
+                    let captures = re.captures(a)?;
+                    captures
+                        .get(1)
+                        .or_else(|| captures.get(0))
+                        .map(|m| m.as_str())
+                }),
+        )
         .collect::<Vec<(&String, Option<&str>)>>();
 
     zipped.sort_by(|(a, a_key), (b, b_key)| {
@@ -59,11 +83,8 @@ fn run() -> Result<(), String> {
 
     print!("reg '\"'");
     for i in &zipped {
-        let new_selection = i.0.replace("'", "''");
+        let new_selection = i.0.replace('\'', "''");
         print!(" '{}'", new_selection);
-        // print!("{}\0", new_selection);
-        // TODO: Allow debugging with -d
-        // println!("\n\tSort key: {:?}", i.1);
     }
     print!(" ;");
     Ok(())
