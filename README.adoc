@@ -47,7 +47,8 @@ define-command sort-selections -params 0.. %{
 
             # TODO: Send additional parameters
 
-            rust-selection-sort -R "$regex" $args -- "$@" > "$kak_command_fifo"
+            rust-selection-sort -R "$regex" -f "$kak_command_fifo" -- "$@"
+
         }
         exec R
     }

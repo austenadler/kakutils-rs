@@ -3,6 +3,8 @@
 use alphanumeric_sort::compare_str;
 use clap::Parser;
 use regex::Regex;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::PathBuf;
 
 struct KakMessage(String, Option<String>);
@@ -91,7 +93,12 @@ fn run() -> Result<(), KakMessage> {
         }
     });
 
-    print!("reg '\"'");
+    let mut f = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(&options.fifo_name)?;
+
+    write!(f, "reg '\"'")?;
 
     let iter: Box<dyn Iterator<Item = _>> = if options.reverse {
         Box::new(zipped.iter().rev())
@@ -101,9 +108,9 @@ fn run() -> Result<(), KakMessage> {
 
     for i in iter {
         let new_selection = i.0.replace('\'', "''");
-        print!(" '{}'", new_selection);
+        write!(f, " '{}'", new_selection)?;
     }
-    print!(" ;");
+    write!(f, " ;")?;
     Ok(())
 }
 
