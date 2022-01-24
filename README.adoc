@@ -1,10 +1,37 @@
 = rust-selection-sort.kak
 
+Sort selections by regular expression or lexicographically
+
+== Example
+
+. Imagine you want to sort these stages
++
+[source,groovy]
+----
+stage('Package (#3)') {
+    // ...
+}
+
+stage('Build (#2)') {
+    // ...
+}
+
+stage('Initialize (#1)') {
+    // ...
+}
+
+stage('Publish (#4)') {}
+----
+
+. Select the stage and stage body with: `%sstage<ret>MLM`
+. Sort the selection by step number with: `:sort-selections #\d+<ret>` (sort on whole capture) or `:sort-selections "'.+?#(\d).+?'"` (sort on first capture group, which contains only the digits)
+. Note if you just run `:sort-selections<ret>`
+
 == Configuration
 
 [source,sh,title='sh']
 ----
-cargo install https://github.com/austenadler/rust-selection-sort.kak
+cargo install --git https://github.com/austenadler/rust-selection-sort.kak
 ----
 
 [source,title='kakrc']
@@ -34,31 +61,6 @@ define-command sort-selections -params 0.. %{
 * Run `sort-selections REGEX` to sort by regex match
 ** If the regex does not contain a capture group
 ** If the regex contains at least one capture group
-
-== Example
-
-. Imagine you want to sort these stages
-+
-[source,groovy]
-----
-stage('Package (#3)') {
-    // ...
-}
-
-stage('Build (#2)') {
-    // ...
-}
-
-stage('Initialize (#1)') {
-    // ...
-}
-
-stage('Publish (#4)') {}
-----
-
-. Select the stage and stage body with: `%sstage<ret>MLM`
-. Sort the selection by step number with: `:sort-selections #\d+<ret>` (sort on whole capture) or `:sort-selections "'.+?#(\d).+?'"` (sort on first capture group, which contains only the digits)
-. Note if you just run `:sort-selections<ret>`
 
 == TODO
 
