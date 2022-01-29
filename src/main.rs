@@ -20,7 +20,7 @@ struct Options {
     // #[clap(env = "kak_response_fifo", takes_value = false)]
     // kak_response_fifo_name: PathBuf,
     #[clap(index = 1)]
-    regex: String,
+    regex: Option<String>,
     #[clap(short = 'S', long)]
     // TODO: Can we invert a boolean? This name is terrible
     no_skip_whitespace: bool,
@@ -31,28 +31,32 @@ struct Options {
 }
 
 fn main() {
-    match run() {
-        Ok(()) => send_message(&KakMessage("Replaced successfully".to_string(), None)),
-        Err(msg) => send_message(&msg),
-    }
+    let msg = match run() {
+        Ok(msg) => msg,
+        Err(msg) => {
+            eprintln!("{} (Debug info: {:?})", msg.0, msg.1);
+            msg
+        }
+    };
+
+    send_message(&msg);
 }
 
 fn send_message(msg: &KakMessage) {
-    // TODO: This isn't echoing anything
-    eprintln!("{} (Debug info: {:?})", msg.0, msg.1);
-
     let msg_str = msg.0.replace('\'', "''");
-    let mut f = open_command_fifo().unwrap();
+    {
+        let mut f = open_command_fifo().unwrap();
 
-    write!(f, "echo '{}';", msg_str).unwrap();
-    write!(f, "echo -debug '{}';", msg_str).unwrap();
+        write!(f, "echo '{}';", msg_str).unwrap();
+        write!(f, "echo -debug '{}';", msg_str).unwrap();
 
-    if let Some(debug_msg_str) = &msg.1 {
-        write!(f, "echo -debug '{}';", debug_msg_str.replace('\'', "''")).unwrap();
+        if let Some(debug_msg_str) = &msg.1 {
+            write!(f, "echo -debug '{}';", debug_msg_str.replace('\'', "''")).unwrap();
+        }
     }
 }
 
-fn run() -> Result<(), KakMessage> {
+fn run() -> Result<KakMessage, KakMessage> {
     let options = Options::try_parse().map_err(|e| {
         KakMessage(
             "Error parsing arguments".to_string(),
@@ -60,8 +64,17 @@ fn run() -> Result<(), KakMessage> {
         )
     })?;
 
-    let re = Regex::new(&options.regex)
-        .map_err(|_| format!("Invalid regular expression: {}", options.regex))?;
+    let re = options
+        .regex
+        .as_ref()
+        .map(|r| Regex::new(r))
+        .transpose()
+        .map_err(|_| {
+            format!(
+                "Invalid regular expression: {}",
+                options.regex.unwrap_or("".to_string())
+            )
+        })?;
 
     let selections = read_selections()?;
 
@@ -78,7 +91,7 @@ fn run() -> Result<(), KakMessage> {
                     }
                 })
                 .map(|a| {
-                    let captures = re.captures(a)?;
+                    let captures = re.as_ref()?.captures(a)?;
                     captures
                         .get(1)
                         .or_else(|| captures.get(0))
@@ -112,9 +125,12 @@ fn run() -> Result<(), KakMessage> {
         let new_selection = i.0.replace('\'', "''");
         write!(f, " '{}'", new_selection)?;
     }
-    write!(f, " ;")?;
+    write!(f, " ; exec R;")?;
 
-    Ok(())
+    Ok(KakMessage(
+        format!("Sorted {} selections", selections.len()),
+        None,
+    ))
 }
 
 fn read_selections() -> Result<Vec<String>, KakMessage> {
