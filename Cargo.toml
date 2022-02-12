@@ -1,5 +1,5 @@
 [package]
-name = "rust-selection-sort"
+name = "kakutils-rs"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
