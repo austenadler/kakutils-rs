@@ -1,5 +1,5 @@
 [package]
-name = "rust-selection-sort"
+name = "kakutils-rs"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
@@ -10,9 +10,13 @@ keywords = ["cli", "kakoune"]
 
 [dependencies]
 regex = "1"
-clap = {version = "3", features = ["derive"]}
+clap = {version = "3", features = ["derive", "env"]}
 alphanumeric-sort = "1"
+shellwords = "1"
 
 [profile.release]
 lto = true
 opt-level = "z"
+strip = true
+codegen-units = 1
+panic = "abort"
