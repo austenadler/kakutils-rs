@@ -1,21 +1,29 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
 
+mod errors;
 use alphanumeric_sort::compare_str;
 use clap::Parser;
+use errors::KakMessage;
 use regex::Regex;
+use std::env;
+use std::fs;
+use std::fs::File;
+use std::fs::OpenOptions;
+use std::io::Write;
 
-struct KakMessage(String, Option<String>);
-
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 #[clap(about, version, author)]
 struct Options {
+    // TODO: Allow clap to parse these. Currently clap treats them as positional
+    // #[clap(env = "kak_command_fifo", takes_value = false)]
+    // kak_command_fifo_name: PathBuf,
+    // #[clap(env = "kak_response_fifo", takes_value = false)]
+    // kak_response_fifo_name: PathBuf,
+    #[clap(index = 1)]
+    regex: Option<String>,
     #[clap(short = 'S', long)]
     // TODO: Can we invert a boolean? This name is terrible
     no_skip_whitespace: bool,
-    #[clap(short = 'R', long, required = true)]
-    regex: String,
-    #[clap(multiple_occurrences = true, required = true)]
-    selections: Vec<String>,
     #[clap(short, long)]
     lexicographic_sort: bool,
     #[clap(short, long)]
@@ -23,37 +31,57 @@ struct Options {
 }
 
 fn main() {
-    match run() {
-        Ok(()) => send_message(&KakMessage("Replaced successfully".to_string(), None)),
-        Err(msg) => send_message(&msg),
-    }
+    let msg = match run() {
+        Ok(msg) => msg,
+        Err(msg) => {
+            eprintln!("{} (Debug info: {:?})", msg.0, msg.1);
+            msg
+        }
+    };
+
+    send_message(&msg);
 }
 
 fn send_message(msg: &KakMessage) {
-    // TODO: This isn't echoing anything
     let msg_str = msg.0.replace('\'', "''");
-    print!("echo '{}';", msg_str);
+    {
+        let mut f = open_command_fifo().unwrap();
 
-    if let Some(debug_info) = &msg.1 {
-        print!("echo -debug '{}';", msg_str);
-        print!("echo -debug '{}';", debug_info.replace('\'', "''"));
+        write!(f, "echo '{}';", msg_str).unwrap();
+        write!(f, "echo -debug '{}';", msg_str).unwrap();
+
+        if let Some(debug_msg_str) = &msg.1 {
+            write!(f, "echo -debug '{}';", debug_msg_str.replace('\'', "''")).unwrap();
+        }
     }
 }
 
-fn run() -> Result<(), KakMessage> {
-    let options = Options::try_parse()?;
+fn run() -> Result<KakMessage, KakMessage> {
+    let options = Options::try_parse().map_err(|e| {
+        KakMessage(
+            "Error parsing arguments".to_string(),
+            Some(format!("Could not parse: {:?}", e)),
+        )
+    })?;
 
-    let replacement_re = options.regex;
+    let re = options
+        .regex
+        .as_ref()
+        .map(|r| Regex::new(r))
+        .transpose()
+        .map_err(|_| {
+            format!(
+                "Invalid regular expression: {}",
+                options.regex.unwrap_or("".to_string())
+            )
+        })?;
 
-    let re = Regex::new(&replacement_re)
-        .map_err(|_| format!("Invalid regular expression: {}", replacement_re))?;
+    let selections = read_selections()?;
 
-    let mut zipped = options
-        .selections
+    let mut zipped = selections
         .iter()
         .zip(
-            options
-                .selections
+            selections
                 .iter()
                 .map(|a| {
                     if options.no_skip_whitespace {
@@ -63,7 +91,7 @@ fn run() -> Result<(), KakMessage> {
                     }
                 })
                 .map(|a| {
-                    let captures = re.captures(a)?;
+                    let captures = re.as_ref()?.captures(a)?;
                     captures
                         .get(1)
                         .or_else(|| captures.get(0))
@@ -83,7 +111,9 @@ fn run() -> Result<(), KakMessage> {
         }
     });
 
-    print!("reg '\"'");
+    let mut f = open_command_fifo()?;
+
+    write!(f, "reg '\"'")?;
 
     let iter: Box<dyn Iterator<Item = _>> = if options.reverse {
         Box::new(zipped.iter().rev())
@@ -93,32 +123,47 @@ fn run() -> Result<(), KakMessage> {
 
     for i in iter {
         let new_selection = i.0.replace('\'', "''");
-        print!(" '{}'", new_selection);
+        write!(f, " '{}'", new_selection)?;
     }
-    print!(" ;");
-    Ok(())
+    write!(f, " ; exec R;")?;
+
+    Ok(KakMessage(
+        format!("Sorted {} selections", selections.len()),
+        None,
+    ))
 }
 
-impl From<std::io::Error> for KakMessage {
-    fn from(err: std::io::Error) -> Self {
-        Self(
-            "Error writing to fifo".to_string(),
-            Some(format!("{:?}", err)),
-        )
+fn read_selections() -> Result<Vec<String>, KakMessage> {
+    {
+        let mut f = open_command_fifo()?;
+
+        write!(
+            f,
+            "echo -quoting shell -to-file {} -- %val{{selections}}",
+            get_var("kak_response_fifo")?
+        )?;
     }
+
+    let selections = shellwords::split(&fs::read_to_string(&get_var("kak_response_fifo")?)?)?;
+
+    Ok(selections)
 }
 
-impl From<clap::Error> for KakMessage {
-    fn from(err: clap::Error) -> Self {
-        Self(
-            "Error parsing arguments".to_string(),
-            Some(format!("{:?}", err)), // Some(err.message.pieces.map(|p| p.0).join()),
-        )
-    }
+fn open_command_fifo() -> Result<File, KakMessage> {
+    OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(&get_var("kak_command_fifo")?)
+        .map_err(|e| e.into())
 }
 
-impl From<String> for KakMessage {
-    fn from(err: String) -> Self {
-        Self(err, None)
-    }
+fn get_var(var_name: &str) -> Result<String, KakMessage> {
+    env::var(var_name).map_err(|e| match e {
+        env::VarError::NotPresent => {
+            KakMessage(format!("Env var {} is not defined", var_name), None)
+        }
+        env::VarError::NotUnicode(_) => {
+            KakMessage(format!("Env var {} is not unicode", var_name), None)
+        }
+    })
 }
