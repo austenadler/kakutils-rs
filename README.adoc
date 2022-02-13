@@ -41,18 +41,14 @@ define-command sort-selections -params 0.. %{
         reg dquote %val{selections}
         eval %sh{
             regex="${1:-.*}"
-
-            # TODO: Use a comand fifo to read/write selections
-            eval set -- "$kak_quoted_selections"
-
-            # TODO: Send additional parameters
-
-            rust-selection-sort -R "$regex" -f "$kak_command_fifo" -- "$@"
+            # use kak_command_fifo kak_response_fifo;
+            ~/syncthing/code/kakutils-rs/target/debug/kakutils-rs sort "$regex" -- "$@"
 
         }
         exec R
     }
 }
+
 ----
 
 == Usage

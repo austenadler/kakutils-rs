@@ -3,6 +3,7 @@
 mod errors;
 use alphanumeric_sort::compare_str;
 use clap::Parser;
+use clap::Subcommand;
 use errors::KakMessage;
 use regex::Regex;
 use std::env;
@@ -13,16 +14,28 @@ use std::io::Write;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
-struct Options {
+struct Cli {
+    #[clap(subcommand)]
+    command: Commands,
     // TODO: Allow clap to parse these. Currently clap treats them as positional
     // #[clap(env = "kak_command_fifo", takes_value = false)]
     // kak_command_fifo_name: PathBuf,
     // #[clap(env = "kak_response_fifo", takes_value = false)]
     // kak_response_fifo_name: PathBuf,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    // #[clap(flatten)]
+    Sort(SortOptions),
+}
+
+#[derive(clap::StructOpt, Debug)]
+struct SortOptions {
     #[clap(index = 1)]
     regex: Option<String>,
-    #[clap(short = 'S', long)]
     // TODO: Can we invert a boolean? This name is terrible
+    #[clap(short = 'S', long)]
     no_skip_whitespace: bool,
     #[clap(short, long)]
     lexicographic_sort: bool,
@@ -39,32 +52,42 @@ fn main() {
         }
     };
 
-    send_message(&msg);
-}
-
-fn send_message(msg: &KakMessage) {
-    let msg_str = msg.0.replace('\'', "''");
-    {
-        let mut f = open_command_fifo().unwrap();
-
-        write!(f, "echo '{}';", msg_str).unwrap();
-        write!(f, "echo -debug '{}';", msg_str).unwrap();
-
-        if let Some(debug_msg_str) = &msg.1 {
-            write!(f, "echo -debug '{}';", debug_msg_str.replace('\'', "''")).unwrap();
-        }
+    if let Err(e) = send_message(&msg) {
+        println!("{:?}", e);
     }
 }
 
+fn send_message(msg: &KakMessage) -> Result<(), Box<dyn std::error::Error>> {
+    let msg_str = msg.0.replace('\'', "''");
+    {
+        let mut f =
+            open_command_fifo().map_err(|e| format!("Could not open command fifo: {:?}", e))?;
+
+        write!(f, "echo '{}';", msg_str)?;
+        write!(f, "echo -debug '{}';", msg_str)?;
+
+        if let Some(debug_msg_str) = &msg.1 {
+            write!(f, "echo -debug '{}';", debug_msg_str.replace('\'', "''"))?;
+        }
+    }
+    Ok(())
+}
+
 fn run() -> Result<KakMessage, KakMessage> {
-    let options = Options::try_parse().map_err(|e| {
+    let options = Cli::try_parse().map_err(|e| {
         KakMessage(
             "Error parsing arguments".to_string(),
             Some(format!("Could not parse: {:?}", e)),
         )
     })?;
 
-    let re = options
+    match &options.command {
+        Commands::Sort(sort_options) => sort(sort_options),
+    }
+}
+
+fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
+    let re = sort_options
         .regex
         .as_ref()
         .map(|r| Regex::new(r))
@@ -72,7 +95,7 @@ fn run() -> Result<KakMessage, KakMessage> {
         .map_err(|_| {
             format!(
                 "Invalid regular expression: {}",
-                options.regex.unwrap_or("".to_string())
+                sort_options.regex.as_ref().unwrap_or(&"".to_string())
             )
         })?;
 
@@ -84,7 +107,7 @@ fn run() -> Result<KakMessage, KakMessage> {
             selections
                 .iter()
                 .map(|a| {
-                    if options.no_skip_whitespace {
+                    if sort_options.no_skip_whitespace {
                         a
                     } else {
                         a.trim()
@@ -104,7 +127,7 @@ fn run() -> Result<KakMessage, KakMessage> {
         let a = a_key.unwrap_or(a);
         let b = b_key.unwrap_or(b);
 
-        if options.lexicographic_sort {
+        if sort_options.lexicographic_sort {
             a.cmp(b)
         } else {
             compare_str(a, b)
@@ -115,7 +138,7 @@ fn run() -> Result<KakMessage, KakMessage> {
 
     write!(f, "reg '\"'")?;
 
-    let iter: Box<dyn Iterator<Item = _>> = if options.reverse {
+    let iter: Box<dyn Iterator<Item = _>> = if sort_options.reverse {
         Box::new(zipped.iter().rev())
     } else {
         Box::new(zipped.iter())
