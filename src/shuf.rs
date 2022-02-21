@@ -1,7 +1,5 @@
-use crate::KakMessage;
-use crate::{kak_response, open_command_fifo};
-use rand::seq::SliceRandom;
-use rand::thread_rng;
+use crate::{kak_response, open_command_fifo, KakMessage};
+use rand::{seq::SliceRandom, thread_rng};
 use std::io::Write;
 #[derive(clap::StructOpt, Debug)]
 pub struct ShufOptions;

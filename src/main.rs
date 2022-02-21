@@ -4,17 +4,16 @@
 mod errors;
 mod shuf;
 mod sort;
-use clap::Parser;
-use clap::Subcommand;
+use clap::{Parser, Subcommand};
 use errors::KakMessage;
 use shuf::ShufOptions;
 use sort::SortOptions;
-use std::env;
-use std::fs;
-use std::fs::File;
-use std::fs::OpenOptions;
-use std::io::Write;
-use std::str::FromStr;
+use std::{
+    env, fs,
+    fs::{File, OpenOptions},
+    io::Write,
+    str::FromStr,
+};
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]

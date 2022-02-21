@@ -1,13 +1,8 @@
-use crate::KakMessage;
-use crate::SelectionDesc;
-use crate::{kak_response, open_command_fifo};
+use crate::{kak_response, open_command_fifo, KakMessage, SelectionDesc};
 use alphanumeric_sort::compare_str;
-use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::{seq::SliceRandom, thread_rng};
 use regex::Regex;
-use std::cmp::Ordering;
-use std::io::Write;
-use std::str::FromStr;
+use std::{cmp::Ordering, io::Write, str::FromStr};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct SortOptions {
