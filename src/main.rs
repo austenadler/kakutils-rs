@@ -34,7 +34,7 @@ enum Commands {
     Shuf(ShufOptions),
 }
 
-#[derive(PartialEq, PartialOrd, Debug)]
+#[derive(PartialEq, PartialOrd, Ord, Eq, Debug)]
 pub struct SelectionDesc {
     left: AnchorPosition,
     right: AnchorPosition,
@@ -57,7 +57,7 @@ impl FromStr for SelectionDesc {
     }
 }
 
-#[derive(PartialOrd, PartialEq, Clone, Debug)]
+#[derive(PartialOrd, PartialEq, Clone, Eq, Ord, Debug)]
 pub struct AnchorPosition {
     row: usize,
     col: usize,
@@ -112,7 +112,12 @@ fn main() {
     let msg = match run() {
         Ok(msg) => msg,
         Err(msg) => {
-            eprintln!("{} (Debug info: {:?})", msg.0, msg.1);
+            // TODO: Do not do a string allocation here
+            eprintln!(
+                "{} (Debug info: {})",
+                msg.0,
+                msg.1.as_ref().unwrap_or(&String::default())
+            );
             msg
         }
     };

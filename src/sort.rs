@@ -1,4 +1,5 @@
 use crate::KakMessage;
+use crate::SelectionDesc;
 use crate::{kak_response, open_command_fifo};
 use alphanumeric_sort::compare_str;
 use rand::seq::SliceRandom;
@@ -6,6 +7,7 @@ use rand::thread_rng;
 use regex::Regex;
 use std::cmp::Ordering;
 use std::io::Write;
+use std::str::FromStr;
 
 #[derive(clap::StructOpt, Debug)]
 pub struct SortOptions {
@@ -36,23 +38,56 @@ struct SortableSelection<'a> {
 fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt::Debug + 'a>(
     sort_options: &'b SortOptions,
     selections: &'a [S],
-    sort_selections_desc: &'tmp [S],
+    selections_desc: &'tmp [S],
     subselections: &'a [S],
     subselections_desc: &'tmp [S],
 ) -> Result<Vec<SortableSelection<'a>>, KakMessage> {
     eprintln!(
         "All units: {:?}\n{:?}\n{:?}\n{:?}",
-        selections, sort_selections_desc, subselections, subselections_desc,
+        selections, selections_desc, subselections, subselections_desc,
     );
     let mut sortable_selections = selections
         .iter()
-        .map(|s| to_sortable_selection(s.as_ref(), sort_options))
-        .collect::<Vec<SortableSelection>>();
+        .zip(selections_desc.iter())
+        .map(|(s, sd)| {
+            Ok((
+                to_sortable_selection(s.as_ref(), sort_options),
+                SelectionDesc::from_str(sd.as_ref())?,
+            ))
+        })
+        .collect::<Result<Vec<(SortableSelection, SelectionDesc)>, KakMessage>>()?;
 
-    // sortable_selections.into_iter().map
+    let mut subselections = subselections
+        .iter()
+        .zip(subselections_desc.iter())
+        .map(|(s, sd)| Ok((s.as_ref(), SelectionDesc::from_str(sd.as_ref())?)))
+        .collect::<Result<Vec<(&str, SelectionDesc)>, KakMessage>>()?;
 
-    // Ok(vec![])
-    todo!();
+    subselections.sort_by(|(_, ssd_a), (_, ssd_b)| ssd_a.cmp(ssd_b));
+
+    // TODO: This is O(n^2), but can be made more efficient since subselections is sorted
+    for (s, s_desc) in &mut sortable_selections {
+        for i in &subselections {
+            if s_desc.contains(&i.1) {
+                s.subselections.push(i.0.clone());
+            }
+        }
+    }
+
+    sortable_selections.sort_by(|(a, _), (b, _)| {
+        for (a_subsel, b_subsel) in a.subselections.iter().zip(b.subselections.iter()) {
+            match a_subsel.cmp(b_subsel) {
+                Ordering::Equal => continue,
+                o => return o,
+            }
+        }
+
+        a.content_comparison.cmp(b.content_comparison)
+    });
+
+    Ok(sortable_selections.into_iter().map(|(s, _)| s).collect())
+
+    // todo!();
 }
 
 fn to_sortable_selection<'a, 'b>(
