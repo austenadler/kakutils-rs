@@ -34,6 +34,8 @@ enum Commands {
 struct SortOptions {
     #[clap(index = 1)]
     regex: Option<String>,
+    #[clap(short = 's', long)]
+    subselections_register: Option<char>,
     // TODO: Can we invert a boolean? This name is terrible
     #[clap(short = 'S', long)]
     no_skip_whitespace: bool,
@@ -41,6 +43,13 @@ struct SortOptions {
     lexicographic_sort: bool,
     #[clap(short, long)]
     reverse: bool,
+    #[clap(short, long)]
+    ignore_case: bool,
+}
+
+struct SortableSelection {
+    content: &str,
+    subselections: Vec<&str>,
 }
 
 fn main() {
@@ -86,7 +95,10 @@ fn run() -> Result<KakMessage, KakMessage> {
     }
 }
 
-fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
+fn sort_keys_simple<'a>(
+    sort_options: &SortOptions,
+    selections: &[&str],
+) -> Result<Vec<SortableSelection>, KakMessage> {
     let re = sort_options
         .regex
         .as_ref()
@@ -99,29 +111,67 @@ fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
             )
         })?;
 
-    let selections = read_selections()?;
-
-    let mut zipped = selections
+    Ok(selections
         .iter()
-        .zip(
+        .map(|s| {
+            if sort_options.no_skip_whitespace {
+            SortableSelection{
+                content: s,
+                subselections: vec![s],
+                }
+            } else {
+            SortableSelection{
+                content: s,
+                subselections: vec![s.trim()],
+                }
+            }
+        })
+        .map(|(s, k)| {
+            let captures = re.as_ref()?.captures(k)?;
+            captures
+                .get(1)
+                .or_else(|| captures.get(0))
+                .map(|m| m.as_str())
+        })
+        .collect::<Vec<Option<&str>>>())
+}
+
+// fn sort_keys_subselection(sort_options: &SortOptions) -> Result<Vec<(&String, Option<&str>)>, KakMessage> {
+//     let sort_selections = kak_response("%val{selections}")?.iter_mut().map(|a| {
+//             if sort_options.no_skip_whitespace {
+//                 a
+//             } else {
+//                 a.trim()
+//             }
+//         });
+//     let sort_selections_desc = kak_response("%val{selections_desc}")?;
+//     kak_exec("z")?;
+//     let selections = kak_response("%val{selections}")?;
+//     let selections_desc = kak_response("%val{selections_desc}")?;
+// }
+
+fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
+    // let selections = kak_response("%val{selections}")?;
+
+    // let sort_keys = if let Some(r) = sort_options.subselections_register {
+    //     let selections_desc = kak_response("%val{selections_desc}")?;
+    // } else {
+    // };
+
+    let mut zipped = match sort_options.subselections_register {
+        Some(c) => {
+            let selections = kak_response("%val{selections}")?;
             selections
-                .iter()
-                .map(|a| {
-                    if sort_options.no_skip_whitespace {
-                        a
-                    } else {
-                        a.trim()
-                    }
-                })
-                .map(|a| {
-                    let captures = re.as_ref()?.captures(a)?;
-                    captures
-                        .get(1)
-                        .or_else(|| captures.get(0))
-                        .map(|m| m.as_str())
-                }),
-        )
-        .collect::<Vec<(&String, Option<&str>)>>();
+                .into_iter()
+                .zip(sort_keys_simple(sort_options, &selections))
+        }
+        None => {
+            let selections = kak_response("%val{selections}")?;
+            selections.iter().zip(selections.iter().map(|s| s.as_str()))
+        }
+    };
+
+    // let mut zipped = sort_keys_simple(sort_options)?;
 
     zipped.sort_by(|(a, a_key), (b, b_key)| {
         let a = a_key.unwrap_or(a);
@@ -151,21 +201,22 @@ fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
     write!(f, " ; exec R;")?;
 
     Ok(KakMessage(
-        format!("Sorted {} selections", selections.len()),
+        format!("Sorted {} selections", zipped.len()),
         None,
     ))
 }
 
-fn read_selections() -> Result<Vec<String>, KakMessage> {
-    {
-        let mut f = open_command_fifo()?;
+fn kak_exec(cmd: &str) -> Result<(), KakMessage> {
+    let mut f = open_command_fifo()?;
 
-        write!(
-            f,
-            "echo -quoting shell -to-file {} -- %val{{selections}}",
-            get_var("kak_response_fifo")?
-        )?;
-    }
+    write!(f, "{}", cmd).map_err(|e| e.into())
+}
+
+fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
+    kak_exec(&format!(
+        "echo -quoting shell -to-file {} -- {msg}",
+        get_var("kak_response_fifo")?
+    ))?;
 
     let selections = shellwords::split(&fs::read_to_string(&get_var("kak_response_fifo")?)?)?;
 
