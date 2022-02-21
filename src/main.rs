@@ -1,16 +1,20 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+#![allow(dead_code, unused_imports)]
 
 mod errors;
-use alphanumeric_sort::compare_str;
+mod shuf;
+mod sort;
 use clap::Parser;
 use clap::Subcommand;
 use errors::KakMessage;
-use regex::Regex;
+use shuf::ShufOptions;
+use sort::SortOptions;
 use std::env;
 use std::fs;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::str::FromStr;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -26,31 +30,83 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    // #[clap(flatten)]
     Sort(SortOptions),
+    Shuf(ShufOptions),
 }
 
-#[derive(clap::StructOpt, Debug)]
-struct SortOptions {
-    #[clap(index = 1)]
-    regex: Option<String>,
-    #[clap(short = 's', long)]
-    subselections_register: Option<char>,
-    // TODO: Can we invert a boolean? This name is terrible
-    #[clap(short = 'S', long)]
-    no_skip_whitespace: bool,
-    #[clap(short, long)]
-    lexicographic_sort: bool,
-    #[clap(short, long)]
-    reverse: bool,
-    #[clap(short, long)]
-    ignore_case: bool,
+#[derive(PartialEq, PartialOrd, Debug)]
+pub struct SelectionDesc {
+    left: AnchorPosition,
+    right: AnchorPosition,
 }
 
-struct SortableSelection {
-    content: &str,
-    subselections: Vec<&str>,
+impl FromStr for SelectionDesc {
+    type Err = KakMessage;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (left, right) = s.split_once(',').ok_or_else(|| {
+            KakMessage(
+                "Could not parse position".to_string(),
+                Some(format!("Could not parse as position: {}", s)),
+            )
+        })?;
+
+        Ok(Self {
+            left: AnchorPosition::from_str(left)?,
+            right: AnchorPosition::from_str(right)?,
+        })
+    }
 }
+
+#[derive(PartialOrd, PartialEq, Clone, Debug)]
+pub struct AnchorPosition {
+    row: usize,
+    col: usize,
+}
+impl FromStr for AnchorPosition {
+    type Err = KakMessage;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (left, right) = s.split_once('.').ok_or_else(|| {
+            KakMessage(
+                "Could not parse position".to_string(),
+                Some(format!("Could not parse as position: {}", s)),
+            )
+        })?;
+        Ok(Self {
+            row: usize::from_str(left)?,
+            col: usize::from_str(right)?,
+        })
+    }
+}
+
+impl SelectionDesc {
+    fn sort(&self) -> Self {
+        if self.left < self.right {
+            // left anchor is first
+            Self {
+                left: self.left.clone(),
+                right: self.right.clone(),
+            }
+        } else {
+            // right anchor is first
+            Self {
+                left: self.right.clone(),
+                right: self.left.clone(),
+            }
+        }
+    }
+
+    fn contains(&self, b: &Self) -> bool {
+        // Cursor and anchor can be flipped. Set a.0 to be leftmost cursor
+        let sorted_a = self.sort();
+        let sorted_b = b.sort();
+
+        sorted_b.left >= sorted_a.left && sorted_b.right <= sorted_b.right
+    }
+}
+
+// impl PartialOrd for SelectionDesc {
+//     fn cmp() {}
+// }
 
 fn main() {
     let msg = match run() {
@@ -91,128 +147,18 @@ fn run() -> Result<KakMessage, KakMessage> {
     })?;
 
     match &options.command {
-        Commands::Sort(sort_options) => sort(sort_options),
+        Commands::Sort(sort_options) => sort::sort(sort_options),
+        Commands::Shuf(shuf_options) => shuf::shuf(shuf_options),
     }
 }
 
-fn sort_keys_simple<'a>(
-    sort_options: &SortOptions,
-    selections: &[&str],
-) -> Result<Vec<SortableSelection>, KakMessage> {
-    let re = sort_options
-        .regex
-        .as_ref()
-        .map(|r| Regex::new(r))
-        .transpose()
-        .map_err(|_| {
-            format!(
-                "Invalid regular expression: {}",
-                sort_options.regex.as_ref().unwrap_or(&"".to_string())
-            )
-        })?;
-
-    Ok(selections
-        .iter()
-        .map(|s| {
-            if sort_options.no_skip_whitespace {
-            SortableSelection{
-                content: s,
-                subselections: vec![s],
-                }
-            } else {
-            SortableSelection{
-                content: s,
-                subselections: vec![s.trim()],
-                }
-            }
-        })
-        .map(|(s, k)| {
-            let captures = re.as_ref()?.captures(k)?;
-            captures
-                .get(1)
-                .or_else(|| captures.get(0))
-                .map(|m| m.as_str())
-        })
-        .collect::<Vec<Option<&str>>>())
-}
-
-// fn sort_keys_subselection(sort_options: &SortOptions) -> Result<Vec<(&String, Option<&str>)>, KakMessage> {
-//     let sort_selections = kak_response("%val{selections}")?.iter_mut().map(|a| {
-//             if sort_options.no_skip_whitespace {
-//                 a
-//             } else {
-//                 a.trim()
-//             }
-//         });
-//     let sort_selections_desc = kak_response("%val{selections_desc}")?;
-//     kak_exec("z")?;
-//     let selections = kak_response("%val{selections}")?;
-//     let selections_desc = kak_response("%val{selections_desc}")?;
-// }
-
-fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
-    // let selections = kak_response("%val{selections}")?;
-
-    // let sort_keys = if let Some(r) = sort_options.subselections_register {
-    //     let selections_desc = kak_response("%val{selections_desc}")?;
-    // } else {
-    // };
-
-    let mut zipped = match sort_options.subselections_register {
-        Some(c) => {
-            let selections = kak_response("%val{selections}")?;
-            selections
-                .into_iter()
-                .zip(sort_keys_simple(sort_options, &selections))
-        }
-        None => {
-            let selections = kak_response("%val{selections}")?;
-            selections.iter().zip(selections.iter().map(|s| s.as_str()))
-        }
-    };
-
-    // let mut zipped = sort_keys_simple(sort_options)?;
-
-    zipped.sort_by(|(a, a_key), (b, b_key)| {
-        let a = a_key.unwrap_or(a);
-        let b = b_key.unwrap_or(b);
-
-        if sort_options.lexicographic_sort {
-            a.cmp(b)
-        } else {
-            compare_str(a, b)
-        }
-    });
-
-    let mut f = open_command_fifo()?;
-
-    write!(f, "reg '\"'")?;
-
-    let iter: Box<dyn Iterator<Item = _>> = if sort_options.reverse {
-        Box::new(zipped.iter().rev())
-    } else {
-        Box::new(zipped.iter())
-    };
-
-    for i in iter {
-        let new_selection = i.0.replace('\'', "''");
-        write!(f, " '{}'", new_selection)?;
-    }
-    write!(f, " ; exec R;")?;
-
-    Ok(KakMessage(
-        format!("Sorted {} selections", zipped.len()),
-        None,
-    ))
-}
-
-fn kak_exec(cmd: &str) -> Result<(), KakMessage> {
+pub fn kak_exec(cmd: &str) -> Result<(), KakMessage> {
     let mut f = open_command_fifo()?;
 
     write!(f, "{}", cmd).map_err(|e| e.into())
 }
 
-fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
+pub fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
     kak_exec(&format!(
         "echo -quoting shell -to-file {} -- {msg}",
         get_var("kak_response_fifo")?
@@ -223,7 +169,7 @@ fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
     Ok(selections)
 }
 
-fn open_command_fifo() -> Result<File, KakMessage> {
+pub fn open_command_fifo() -> Result<File, KakMessage> {
     OpenOptions::new()
         .write(true)
         .append(true)
@@ -231,7 +177,7 @@ fn open_command_fifo() -> Result<File, KakMessage> {
         .map_err(|e| e.into())
 }
 
-fn get_var(var_name: &str) -> Result<String, KakMessage> {
+pub fn get_var(var_name: &str) -> Result<String, KakMessage> {
     env::var(var_name).map_err(|e| match e {
         env::VarError::NotPresent => {
             KakMessage(format!("Env var {} is not defined", var_name), None)
@@ -240,4 +186,26 @@ fn get_var(var_name: &str) -> Result<String, KakMessage> {
             KakMessage(format!("Env var {} is not unicode", var_name), None)
         }
     })
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_anchor_position() {
+        let sd = SelectionDesc {
+            left: AnchorPosition { row: 18, col: 9 },
+            right: AnchorPosition { row: 10, col: 0 },
+        };
+        // Check parsing
+        assert_eq!(SelectionDesc::from_str("18.9,10.0").unwrap(), sd);
+        // Check if multiple parsed ones match
+        assert_eq!(
+            SelectionDesc::from_str("18.9,10.0").unwrap(),
+            SelectionDesc::from_str("18.9,10.0").unwrap()
+        );
+        // Check if sorting works
+        assert_eq!(sd.sort(), SelectionDesc::from_str("10.0,18.9").unwrap());
+        assert_eq!(sd.sort(), sd.sort().sort());
+    }
 }

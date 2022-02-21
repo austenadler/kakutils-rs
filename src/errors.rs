@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 #[derive(Debug)]
 pub struct KakMessage(pub String, pub Option<String>);
 
@@ -19,5 +21,11 @@ impl From<String> for KakMessage {
 impl From<shellwords::MismatchedQuotes> for KakMessage {
     fn from(err: shellwords::MismatchedQuotes) -> Self {
         Self("Corrupt kak response".to_string(), Some(err.to_string()))
+    }
+}
+
+impl From<ParseIntError> for KakMessage {
+    fn from(err: ParseIntError) -> Self {
+        Self(format!("Could not parse int: {}", err), None)
     }
 }
