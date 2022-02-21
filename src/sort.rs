@@ -35,6 +35,7 @@ struct SortableSelection<'a> {
     subselections: Vec<&'a str>,
 }
 
+/// Gets a Vec of sortable selections with a given list of subselections and descriptions
 fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt::Debug + 'a>(
     sort_options: &'b SortOptions,
     selections: &'a [S],
@@ -65,6 +66,8 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
 
     subselections.sort_by(|(_, ssd_a), (_, ssd_b)| ssd_a.cmp(ssd_b));
 
+    // For each selection, check if they contain any subselections
+    // If so, add them to the subselections vector
     // TODO: This is O(n^2), but can be made more efficient since subselections is sorted
     for (s, s_desc) in &mut sortable_selections {
         for i in &subselections {
@@ -75,19 +78,22 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
     }
 
     sortable_selections.sort_by(|(a, _), (b, _)| {
+        // First, check if there are any subselection comparisons to be made
+        // If one has more subselections than the other, stop comparing
         for (a_subsel, b_subsel) in a.subselections.iter().zip(b.subselections.iter()) {
             match a_subsel.cmp(b_subsel) {
+                // These subselecitons are equal, so we can't do anything
                 Ordering::Equal => continue,
+                // We found a difference, so return the comparison
                 o => return o,
             }
         }
 
+        // No subselections mismatched, so compare the (possibly trimmed) content
         a.content_comparison.cmp(b.content_comparison)
     });
 
     Ok(sortable_selections.into_iter().map(|(s, _)| s).collect())
-
-    // todo!();
 }
 
 fn to_sortable_selection<'a, 'b>(
