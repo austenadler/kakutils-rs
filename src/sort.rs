@@ -43,10 +43,12 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
     subselections: &'a [S],
     subselections_desc: &'tmp [S],
 ) -> Result<Vec<SortableSelection<'a>>, KakMessage> {
-    eprintln!(
-        "All units: {:?}\n{:?}\n{:?}\n{:?}",
-        selections, selections_desc, subselections, subselections_desc,
-    );
+    if selections.len() != selections_desc.len() || subselections.len() != subselections_desc.len()
+    {
+        return Err(KakMessage ("Internal error".to_string(), Some(
+            format!("Counts for selections={}, selections_desc={}, subselections={}, subselections_desc={}",selections.len(),selections_desc.len(),subselections.len(),subselections_desc.len())
+        )));
+    }
     let mut sortable_selections = selections
         .iter()
         .zip(selections_desc.iter())
@@ -82,7 +84,7 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
         // If one has more subselections than the other, stop comparing
         for (a_subsel, b_subsel) in a.subselections.iter().zip(b.subselections.iter()) {
             match a_subsel.cmp(b_subsel) {
-                // These subselecitons are equal, so we can't do anything
+                // These subselections are equal, so we can't do anything
                 Ordering::Equal => continue,
                 // We found a difference, so return the comparison
                 o => return o,
