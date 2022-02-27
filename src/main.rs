@@ -1,9 +1,10 @@
 #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
-#![allow(dead_code, unused_imports)]
+// #![allow(dead_code, unused_imports)]
 
 mod errors;
 mod shuf;
 mod sort;
+mod uniq;
 use clap::{Parser, Subcommand};
 use errors::KakMessage;
 use shuf::ShufOptions;
@@ -14,6 +15,7 @@ use std::{
     io::Write,
     str::FromStr,
 };
+use uniq::UniqOptions;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -31,6 +33,7 @@ struct Cli {
 enum Commands {
     Sort(SortOptions),
     Shuf(ShufOptions),
+    Uniq(UniqOptions),
 }
 
 #[derive(PartialEq, PartialOrd, Ord, Eq, Debug)]
@@ -103,10 +106,6 @@ impl SelectionDesc {
     }
 }
 
-// impl PartialOrd for SelectionDesc {
-//     fn cmp() {}
-// }
-
 fn main() {
     let msg = match run() {
         Ok(msg) => msg,
@@ -122,7 +121,7 @@ fn main() {
     };
 
     if let Err(e) = send_message(&msg) {
-        println!("{:?}", e);
+        println!("{}", e);
     }
 }
 
@@ -146,13 +145,14 @@ fn run() -> Result<KakMessage, KakMessage> {
     let options = Cli::try_parse().map_err(|e| {
         KakMessage(
             "Error parsing arguments".to_string(),
-            Some(format!("Could not parse: {:?}", e)),
+            Some(format!("Could not parse: {}", e)),
         )
     })?;
 
     match &options.command {
         Commands::Sort(sort_options) => sort::sort(sort_options),
         Commands::Shuf(shuf_options) => shuf::shuf(shuf_options),
+        Commands::Uniq(uniq_options) => uniq::uniq(uniq_options),
     }
 }
 

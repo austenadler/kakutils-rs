@@ -1,6 +1,5 @@
 use crate::{kak_response, open_command_fifo, KakMessage, SelectionDesc};
 use alphanumeric_sort::compare_str;
-use rand::{seq::SliceRandom, thread_rng};
 use regex::Regex;
 use std::{cmp::Ordering, io::Write, str::FromStr};
 
@@ -11,7 +10,7 @@ pub struct SortOptions {
     #[clap(short = 's', long)]
     subselections_register: Option<char>,
     // TODO: Can we invert a boolean? This name is terrible
-    #[clap(short = 'S', long)]
+    #[clap(short = 'S', long, parse(try_from_str = invert_bool), default_value_t)]
     no_skip_whitespace: bool,
     #[clap(short, long)]
     lexicographic_sort: bool,
@@ -19,6 +18,15 @@ pub struct SortOptions {
     reverse: bool,
     #[clap(short, long)]
     ignore_case: bool,
+}
+
+fn invert_bool(s: &str) -> Result<bool, &'static str> {
+    // Invert the boolean
+    match s {
+        "false" => Ok(true),
+        "true" => Ok(false),
+        _ => Err("Unparsable boolean value"),
+    }
 }
 
 struct SortableSelection<'a> {
@@ -58,9 +66,12 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
     let mut subselections = subselections
         .iter()
         .zip(subselections_desc.iter())
-        .map(|(s, sd)| Ok((s.as_ref(), SelectionDesc::from_str(sd.as_ref())?)))
+        // Bind selection with associated description
+        // Sort descriptions so left is always <= right
+        .map(|(s, sd)| Ok((s.as_ref(), SelectionDesc::from_str(sd.as_ref())?.sort())))
         .collect::<Result<Vec<(&str, SelectionDesc)>, KakMessage>>()?;
 
+    // Sort subselections by description
     subselections.sort_by(|(_, ssd_a), (_, ssd_b)| ssd_a.cmp(ssd_b));
 
     // For each selection, check if they contain any subselections
@@ -113,6 +124,8 @@ fn to_sortable_selection<'a, 'b>(
 }
 
 pub fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
+    eprintln!("Got sort options: {:?}", sort_options);
+
     let subselections: Option<(Vec<String>, Vec<String>)> = sort_options
         .subselections_register
         .map::<Result<(Vec<String>, Vec<String>), KakMessage>, _>(|_c| {

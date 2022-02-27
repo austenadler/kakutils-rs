@@ -7,7 +7,7 @@ impl From<std::io::Error> for KakMessage {
     fn from(err: std::io::Error) -> Self {
         Self(
             "Error writing to fifo".to_string(),
-            Some(format!("{:?}", err)),
+            Some(format!("{}", err)),
         )
     }
 }
