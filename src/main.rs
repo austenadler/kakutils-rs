@@ -17,6 +17,7 @@ mod uniq;
 use clap::{Parser, Subcommand};
 use errors::KakMessage;
 use std::{
+    convert::Into,
     env, fs,
     fs::{File, OpenOptions},
     io::Write,
@@ -168,7 +169,7 @@ fn run() -> Result<KakMessage, KakMessage> {
 pub fn kak_exec(cmd: &str) -> Result<(), KakMessage> {
     let mut f = open_command_fifo()?;
 
-    write!(f, "{}", cmd).map_err(|e| e.into())
+    write!(f, "{}", cmd).map_err(Into::into)
 }
 
 pub fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
@@ -187,7 +188,7 @@ pub fn open_command_fifo() -> Result<File, KakMessage> {
         .write(true)
         .append(true)
         .open(&get_var("kak_command_fifo")?)
-        .map_err(|e| e.into())
+        .map_err(Into::into)
 }
 
 pub fn get_var(var_name: &str) -> Result<String, KakMessage> {
@@ -229,13 +230,13 @@ mod test {
     #[test]
     fn test_contains() {
         assert_true!(sd.contains(sd));
-        assert_false!(sd.contains(SelectionDesc::from_str("17.9,10.1").unwrap()))
-        assert_false!(sd.contains(SelectionDesc::from_str("18.8,10.1").unwrap()))
-        assert_false!(sd.contains(SelectionDesc::from_str("18.9,11.1").unwrap()))
-        assert_false!(sd.contains(SelectionDesc::from_str("18.9,10.2").unwrap()))
-        assert_true!(sd.contains(SelectionDesc::from_str("19.9,10.1").unwrap()))
-        assert_true!(sd.contains(SelectionDesc::from_str("18.10,10.1").unwrap()))
-        assert_true!(sd.contains(SelectionDesc::from_str("18.9,9.1").unwrap()))
-        assert_true!(sd.contains(SelectionDesc::from_str("18.9,10.0").unwrap()))
+        assert_false!(sd.contains(SelectionDesc::from_str("17.9,10.1").unwrap()));
+        assert_false!(sd.contains(SelectionDesc::from_str("18.8,10.1").unwrap()));
+        assert_false!(sd.contains(SelectionDesc::from_str("18.9,11.1").unwrap()));
+        assert_false!(sd.contains(SelectionDesc::from_str("18.9,10.2").unwrap()));
+        assert_true!(sd.contains(SelectionDesc::from_str("19.9,10.1").unwrap()));
+        assert_true!(sd.contains(SelectionDesc::from_str("18.10,10.1").unwrap()));
+        assert_true!(sd.contains(SelectionDesc::from_str("18.9,9.1").unwrap()));
+        assert_true!(sd.contains(SelectionDesc::from_str("18.9,10.0").unwrap()));
     }
 }

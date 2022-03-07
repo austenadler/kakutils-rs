@@ -1,6 +1,7 @@
 use crate::{kak_response, open_command_fifo, KakMessage};
 use std::{
-    collections::{hash_map::Entry, HashMap},
+    collections::{hash_map::DefaultHasher, BTreeSet},
+    hash::{Hash, Hasher},
     io::Write,
 };
 #[derive(clap::StructOpt, Debug)]
@@ -17,7 +18,7 @@ pub fn uniq(options: &Options) -> Result<KakMessage, KakMessage> {
     let mut f = open_command_fifo()?;
     write!(f, "reg '\"'")?;
 
-    for i in selections.iter().scan(HashMap::new(), |state, s| {
+    for i in selections.iter().scan(BTreeSet::new(), |state, s| {
         let key = if options.no_skip_whitespace {
             s
         } else {
@@ -31,18 +32,16 @@ pub fn uniq(options: &Options) -> Result<KakMessage, KakMessage> {
             key.to_string()
         };
 
-        let ret = match state.entry(key) {
-            Entry::Vacant(e) => {
-                e.insert(());
-                s
-            }
-            Entry::Occupied(_) => {
-                // We've seen this selection before, so empty it
-                ""
-            }
-        };
+        let mut hasher = DefaultHasher::new();
+        key.hash(&mut hasher);
 
-        Some(ret)
+        Some(if state.insert(hasher.finish()) {
+            // True if this is a new line
+            s
+        } else {
+            // Nothing was inserted because we already saw this line
+            ""
+        })
     }) {
         let new_selection = i.replace('\'', "''");
         write!(f, " '{}'", new_selection)?;

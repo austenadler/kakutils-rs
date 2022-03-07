@@ -43,12 +43,10 @@ define-command sort-selections -params 0.. %{
             regex="${1:-.*}"
             # use kak_command_fifo kak_response_fifo;
             ~/syncthing/code/kakutils-rs/target/debug/kakutils-rs sort "$regex" -- "$@"
-
         }
         exec R
     }
 }
-
 ----
 
 == Usage
