@@ -4,27 +4,27 @@ use std::{
     io::Write,
 };
 #[derive(clap::StructOpt, Debug)]
-pub struct UniqOptions {
+pub struct Options {
     #[clap(short, long)]
     ignore_case: bool,
     // TODO: Can we invert a boolean? This name is terrible
     #[clap(short = 'S', long)]
     no_skip_whitespace: bool,
 }
-pub fn uniq(uniq_options: &UniqOptions) -> Result<KakMessage, KakMessage> {
+pub fn uniq(options: &Options) -> Result<KakMessage, KakMessage> {
     let selections = kak_response("%val{selections}")?;
 
     let mut f = open_command_fifo()?;
     write!(f, "reg '\"'")?;
 
     for i in selections.iter().scan(HashMap::new(), |state, s| {
-        let key = if uniq_options.no_skip_whitespace {
+        let key = if options.no_skip_whitespace {
             s
         } else {
             s.trim()
         };
 
-        let key = if uniq_options.ignore_case {
+        let key = if options.ignore_case {
             key.to_lowercase()
         } else {
             // TODO: Do I really need to clone this?

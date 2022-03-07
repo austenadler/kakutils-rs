@@ -1,21 +1,27 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+// Enable clippy 'hard mode'
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
+// Intended behavior (10_f64 as i32)
+#![allow(clippy::cast_possible_truncation)]
+// Cannot be fixed
+#![allow(clippy::multiple_crate_versions)]
+#![allow(clippy::struct_excessive_bools)]
+
+// #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
 // #![allow(dead_code, unused_imports)]
 
 mod errors;
+mod math_eval;
 mod shuf;
 mod sort;
 mod uniq;
 use clap::{Parser, Subcommand};
 use errors::KakMessage;
-use shuf::ShufOptions;
-use sort::SortOptions;
 use std::{
     env, fs,
     fs::{File, OpenOptions},
     io::Write,
     str::FromStr,
 };
-use uniq::UniqOptions;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -31,9 +37,11 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    Sort(SortOptions),
-    Shuf(ShufOptions),
-    Uniq(UniqOptions),
+    Sort(sort::Options),
+    Shuf(shuf::Options),
+    Uniq(uniq::Options),
+    #[clap(visible_aliases = &["bc", "eval"])]
+    MathEval(math_eval::Options),
 }
 
 #[derive(PartialEq, PartialOrd, Ord, Eq, Debug)]
@@ -102,7 +110,7 @@ impl SelectionDesc {
         let sorted_a = self.sort();
         let sorted_b = b.sort();
 
-        sorted_b.left >= sorted_a.left && sorted_b.right <= sorted_b.right
+        sorted_b.left >= sorted_a.left && sorted_b.right <= sorted_a.right
     }
 }
 
@@ -114,7 +122,7 @@ fn main() {
             eprintln!(
                 "{} (Debug info: {})",
                 msg.0,
-                msg.1.as_ref().unwrap_or(&String::default())
+                msg.1.as_ref().map_or("", String::as_str)
             );
             msg
         }
@@ -150,9 +158,10 @@ fn run() -> Result<KakMessage, KakMessage> {
     })?;
 
     match &options.command {
-        Commands::Sort(sort_options) => sort::sort(sort_options),
-        Commands::Shuf(shuf_options) => shuf::shuf(shuf_options),
-        Commands::Uniq(uniq_options) => uniq::uniq(uniq_options),
+        Commands::Sort(o) => sort::sort(o),
+        Commands::Shuf(o) => shuf::shuf(o),
+        Commands::Uniq(o) => uniq::uniq(o),
+        Commands::MathEval(o) => math_eval::math_eval(o),
     }
 }
 
@@ -195,21 +204,38 @@ pub fn get_var(var_name: &str) -> Result<String, KakMessage> {
 #[cfg(test)]
 mod test {
     use super::*;
+    const sd: SelectionDesc = SelectionDesc {
+        left: AnchorPosition { row: 18, col: 9 },
+        right: AnchorPosition { row: 10, col: 1 },
+    };
     #[test]
     fn test_anchor_position() {
-        let sd = SelectionDesc {
-            left: AnchorPosition { row: 18, col: 9 },
-            right: AnchorPosition { row: 10, col: 0 },
-        };
+        // let sd = SelectionDesc {
+        //     left: AnchorPosition { row: 18, col: 9 },
+        //     right: AnchorPosition { row: 10, col: 0 },
+        // };
         // Check parsing
-        assert_eq!(SelectionDesc::from_str("18.9,10.0").unwrap(), sd);
+        assert_eq!(SelectionDesc::from_str("18.9,10.1").unwrap(), sd);
         // Check if multiple parsed ones match
         assert_eq!(
-            SelectionDesc::from_str("18.9,10.0").unwrap(),
-            SelectionDesc::from_str("18.9,10.0").unwrap()
+            SelectionDesc::from_str("18.9,10.1").unwrap(),
+            SelectionDesc::from_str("18.9,10.1").unwrap()
         );
         // Check if sorting works
-        assert_eq!(sd.sort(), SelectionDesc::from_str("10.0,18.9").unwrap());
+        assert_eq!(sd.sort(), SelectionDesc::from_str("10.1,18.9").unwrap());
         assert_eq!(sd.sort(), sd.sort().sort());
+    }
+
+    #[test]
+    fn test_contains() {
+        assert_true!(sd.contains(sd));
+        assert_false!(sd.contains(SelectionDesc::from_str("17.9,10.1").unwrap()))
+        assert_false!(sd.contains(SelectionDesc::from_str("18.8,10.1").unwrap()))
+        assert_false!(sd.contains(SelectionDesc::from_str("18.9,11.1").unwrap()))
+        assert_false!(sd.contains(SelectionDesc::from_str("18.9,10.2").unwrap()))
+        assert_true!(sd.contains(SelectionDesc::from_str("19.9,10.1").unwrap()))
+        assert_true!(sd.contains(SelectionDesc::from_str("18.10,10.1").unwrap()))
+        assert_true!(sd.contains(SelectionDesc::from_str("18.9,9.1").unwrap()))
+        assert_true!(sd.contains(SelectionDesc::from_str("18.9,10.0").unwrap()))
     }
 }

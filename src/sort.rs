@@ -4,7 +4,7 @@ use regex::Regex;
 use std::{cmp::Ordering, io::Write, str::FromStr};
 
 #[derive(clap::StructOpt, Debug)]
-pub struct SortOptions {
+pub struct Options {
     #[clap(index = 1)]
     regex: Option<Regex>,
     #[clap(short = 's', long)]
@@ -40,7 +40,7 @@ struct SortableSelection<'a> {
 
 /// Gets a Vec of sortable selections with a given list of subselections and descriptions
 fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt::Debug + 'a>(
-    sort_options: &'b SortOptions,
+    options: &'b Options,
     selections: &'a [S],
     selections_desc: &'tmp [S],
     subselections: &'a [S],
@@ -57,7 +57,7 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
         .zip(selections_desc.iter())
         .map(|(s, sd)| {
             Ok((
-                to_sortable_selection(s.as_ref(), sort_options),
+                to_sortable_selection(s.as_ref(), options),
                 SelectionDesc::from_str(sd.as_ref())?,
             ))
         })
@@ -80,7 +80,7 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
     for (s, s_desc) in &mut sortable_selections {
         for i in &subselections {
             if s_desc.contains(&i.1) {
-                s.subselections.push(i.0.clone());
+                s.subselections.push(i.0);
             }
         }
     }
@@ -106,9 +106,9 @@ fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt:
 
 fn to_sortable_selection<'a, 'b>(
     selection: &'a str,
-    sort_options: &'b SortOptions,
+    options: &'b Options,
 ) -> SortableSelection<'a> {
-    if sort_options.no_skip_whitespace {
+    if options.no_skip_whitespace {
         SortableSelection {
             content: selection,
             content_comparison: selection,
@@ -123,10 +123,10 @@ fn to_sortable_selection<'a, 'b>(
     }
 }
 
-pub fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
-    eprintln!("Got sort options: {:?}", sort_options);
+pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
+    eprintln!("Got sort options: {:?}", options);
 
-    let subselections: Option<(Vec<String>, Vec<String>)> = sort_options
+    let subselections: Option<(Vec<String>, Vec<String>)> = options
         .subselections_register
         .map::<Result<(Vec<String>, Vec<String>), KakMessage>, _>(|_c| {
             let subselections = kak_response("%val{selections}")?;
@@ -142,7 +142,7 @@ pub fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
             let selections_desc = kak_response("%val{selections_desc}")?;
 
             get_sortable_selections_subselections(
-                sort_options,
+                options,
                 &selections,
                 &selections_desc,
                 subselections,
@@ -151,13 +151,13 @@ pub fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
         }
         None => selections
             .iter()
-            .map(|s| to_sortable_selection(s, sort_options))
+            .map(|s| to_sortable_selection(s, options))
             .collect(),
     };
 
     zipped.sort_by(|a, b| {
         for (a_subselection, b_subselection) in a.subselections.iter().zip(b.subselections.iter()) {
-            let comparison = if sort_options.lexicographic_sort {
+            let comparison = if options.lexicographic_sort {
                 a_subselection.cmp(b_subselection)
             } else {
                 compare_str(a_subselection, b_subselection)
@@ -168,7 +168,7 @@ pub fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
             }
         }
 
-        if sort_options.lexicographic_sort {
+        if options.lexicographic_sort {
             a.content_comparison.cmp(b.content_comparison)
         } else {
             compare_str(a.content_comparison, b.content_comparison)
@@ -179,7 +179,7 @@ pub fn sort(sort_options: &SortOptions) -> Result<KakMessage, KakMessage> {
 
     write!(f, "reg '\"'")?;
 
-    let iter: Box<dyn Iterator<Item = _>> = if sort_options.reverse {
+    let iter: Box<dyn Iterator<Item = _>> = if options.reverse {
         Box::new(zipped.iter().rev())
     } else {
         Box::new(zipped.iter())
