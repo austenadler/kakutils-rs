@@ -20,7 +20,7 @@ use std::{
     convert::Into,
     env, fs,
     fs::{File, OpenOptions},
-    io::Write,
+    io::{BufWriter, Write},
     str::FromStr,
 };
 
@@ -183,11 +183,12 @@ pub fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
     Ok(selections)
 }
 
-pub fn open_command_fifo() -> Result<File, KakMessage> {
+pub fn open_command_fifo() -> Result<BufWriter<File>, KakMessage> {
     OpenOptions::new()
         .write(true)
         .append(true)
         .open(&get_var("kak_command_fifo")?)
+        .map(BufWriter::new)
         .map_err(Into::into)
 }
 

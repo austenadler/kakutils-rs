@@ -1,3 +1,4 @@
+cargo-features = ["strip"]
 [package]
 name = "kakutils-rs"
 version = "0.1.0"
