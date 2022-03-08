@@ -146,6 +146,7 @@ fn send_message(msg: &KakMessage) -> Result<(), Box<dyn std::error::Error>> {
         if let Some(debug_msg_str) = &msg.1 {
             write!(f, "echo -debug '{}';", debug_msg_str.replace('\'', "''"))?;
         }
+        f.flush()?;
     }
     Ok(())
 }
@@ -169,7 +170,8 @@ fn run() -> Result<KakMessage, KakMessage> {
 pub fn kak_exec(cmd: &str) -> Result<(), KakMessage> {
     let mut f = open_command_fifo()?;
 
-    write!(f, "{}", cmd).map_err(Into::into)
+    write!(f, "{}", cmd)?;
+    f.flush().map_err(Into::into)
 }
 
 pub fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {

@@ -190,6 +190,7 @@ pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
         write!(f, " '{}'", new_selection)?;
     }
     write!(f, " ; exec R;")?;
+    f.flush()?;
 
     Ok(KakMessage(
         format!("Sorted {} selections", zipped.len()),

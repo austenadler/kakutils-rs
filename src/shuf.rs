@@ -17,6 +17,7 @@ pub fn shuf(_options: &Options) -> Result<KakMessage, KakMessage> {
         write!(f, " '{}'", new_selection)?;
     }
     write!(f, " ; exec R;")?;
+    f.flush()?;
 
     Ok(KakMessage(
         format!("Shuf {} selections", selections.len()),

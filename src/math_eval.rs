@@ -36,6 +36,7 @@ pub fn math_eval(_options: &Options) -> Result<KakMessage, KakMessage> {
         write!(f, " '{}'", new_selection.as_deref().unwrap_or(""))?;
     }
     write!(f, " ; exec R;")?;
+    f.flush()?;
 
     Ok(KakMessage(
         format!("MathEval {} selections", selections.len()),
