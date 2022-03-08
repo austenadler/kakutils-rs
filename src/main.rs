@@ -167,6 +167,9 @@ fn run() -> Result<KakMessage, KakMessage> {
     }
 }
 
+/// # Errors
+///
+/// Will return `Err` if command fifo could not be opened or written to
 pub fn kak_exec(cmd: &str) -> Result<(), KakMessage> {
     let mut f = open_command_fifo()?;
 
@@ -174,6 +177,9 @@ pub fn kak_exec(cmd: &str) -> Result<(), KakMessage> {
     f.flush().map_err(Into::into)
 }
 
+/// # Errors
+///
+/// Will return `Err` if command fifo could not be opened or written to
 pub fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
     kak_exec(&format!(
         "echo -quoting shell -to-file {} -- {msg}",
@@ -185,6 +191,9 @@ pub fn kak_response(msg: &str) -> Result<Vec<String>, KakMessage> {
     Ok(selections)
 }
 
+/// # Errors
+///
+/// Will return `Err` if command fifo could not be opened
 pub fn open_command_fifo() -> Result<BufWriter<File>, KakMessage> {
     OpenOptions::new()
         .write(true)
@@ -194,6 +203,9 @@ pub fn open_command_fifo() -> Result<BufWriter<File>, KakMessage> {
         .map_err(Into::into)
 }
 
+/// # Errors
+///
+/// Will return `Err` if requested environment variable is not unicode or not present
 pub fn get_var(var_name: &str) -> Result<String, KakMessage> {
     env::var(var_name).map_err(|e| match e {
         env::VarError::NotPresent => {
