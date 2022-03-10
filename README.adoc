@@ -2,25 +2,29 @@
 
 Sort by regular expression or lexicographically, find uniqes, shuffle, or evaluate rust selections without spawning a new command for each.
 
+[![asciicast](https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai.svg)](https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai)
+
 == Example
 
 . Imagine you want to sort these stages
 +
 [source,groovy]
 ----
-stage('Package (#3)') {
-    // ...
+stage("Build") { # Step 1
+    8+3
 }
 
-stage('Build (#2)') {
-    // ...
+stage("Compile") { # Step 5
+    math::log2(8)
 }
 
-stage('Initialize (#1)') {
-    // ...
+stage("Assemble") { # Step 10
+    2^9+math::log2(10)
 }
 
-stage('Publish (#4)') {}
+stage("Make") { # Step 100
+    not_a_formula
+}
 ----
 
 . Select the stage and stage body with: `%sstage<ret>MLM`
