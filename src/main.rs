@@ -13,7 +13,7 @@ mod errors;
 mod kak;
 mod math_eval;
 mod shuf;
-// mod sort;
+mod sort;
 mod uniq;
 use clap::{Parser, Subcommand};
 use errors::KakMessage;
@@ -34,7 +34,7 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    // Sort(sort::Options),
+    Sort(sort::Options),
     Shuf(shuf::Options),
     Uniq(uniq::Options),
     #[clap(visible_aliases = &["bc", "eval"])]
@@ -69,7 +69,7 @@ fn run() -> Result<KakMessage, KakMessage> {
     })?;
 
     match &options.command {
-        // Commands::Sort(o) => sort::sort(o),
+        Commands::Sort(o) => sort::sort(o),
         Commands::Shuf(o) => shuf::shuf(o),
         Commands::Uniq(o) => uniq::uniq(o),
         Commands::MathEval(o) => math_eval::math_eval(o),

@@ -14,6 +14,12 @@ pub struct SelectionWithDesc {
     pub desc: SelectionDesc,
 }
 
+#[derive(PartialEq, Eq, Debug)]
+pub struct SelectionWithSubselections {
+    pub selection: SelectionWithDesc,
+    pub subselections: Vec<SelectionWithDesc>,
+}
+
 #[derive(PartialEq, PartialOrd, Ord, Eq, Debug)]
 pub struct SelectionDesc {
     pub left: AnchorPosition,
@@ -115,6 +121,18 @@ pub fn get_selections_desc() -> Result<Vec<SelectionDesc>, KakMessage> {
         .collect::<Result<Vec<_>, KakMessage>>()
 }
 
+// pub fn get_selections_with_subselections(
+//     register: &str,
+// ) -> Result<Vec<SelectionWithSubselections>, KakMessage> {
+//     // TODO: Escape register
+//     let subselections = get_selections_with_desc()?;
+//     exec(format!("\"{}z", register.replace('\'', "''")))?;
+//     let selections = get_selections_with_desc()?;
+
+//     for sel in selections {
+//         for i in subselections {}
+//     }
+// }
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to,

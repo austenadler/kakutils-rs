@@ -1,9 +1,7 @@
-use crate::{
-    get_selections_with_desc, kak, open_command_fifo, KakMessage, SelectionDesc, SelectionWithDesc,
-};
+use crate::{get_selections_with_desc, kak, open_command_fifo, KakMessage, SelectionWithDesc};
 use alphanumeric_sort::compare_str;
 use regex::Regex;
-use std::{cmp::Ordering, io::Write, str::FromStr};
+use std::{cmp::Ordering, io::Write};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
@@ -33,7 +31,7 @@ fn invert_bool(s: &str) -> Result<bool, &'static str> {
 
 struct SortableSelection<'a> {
     /// The content of the selection
-    content: &'a str,
+    selection: &'a SelectionWithDesc,
     /// The string used to compare the content
     content_comparison: &'a str,
     /// Any subselections
@@ -41,77 +39,78 @@ struct SortableSelection<'a> {
 }
 
 /// Gets a Vec of sortable selections with a given list of subselections and descriptions
-fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt::Debug + 'a>(
-    options: &'b Options,
-    selections: Vec<SelectionWithDesc>,
-    subselections: Vec<SelectionWithDesc>,
-) -> Result<Vec<SortableSelection<'a>>, KakMessage> {
-    let mut sortable_selections = selections
-        .iter()
-        .zip(selections_desc.iter())
-        .map(|(s, sd)| {
-            Ok((
-                to_sortable_selection(s.as_ref(), options),
-                SelectionDesc::from_str(sd.as_ref())?,
-            ))
-        })
-        .collect::<Result<Vec<(SortableSelection, SelectionDesc)>, KakMessage>>()?;
+/// TODO: Implement sort by subselection
+// fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt::Debug + 'a>(
+//     options: &'b Options,
+//     selections: Vec<SelectionWithDesc>,
+//     subselections: Vec<SelectionWithDesc>,
+// ) -> Result<Vec<SortableSelection<'a>>, KakMessage> {
+//     let mut sortable_selections = selections
+//         .iter()
+//         .zip(selections_desc.iter())
+//         .map(|(s, sd)| {
+//             Ok((
+//                 to_sortable_selection(s.as_ref(), options),
+//                 SelectionDesc::from_str(sd.as_ref())?,
+//             ))
+//         })
+//         .collect::<Result<Vec<(SortableSelection, SelectionDesc)>, KakMessage>>()?;
 
-    let mut subselections = subselections
-        .iter()
-        .zip(subselections_desc.iter())
-        // Bind selection with associated description
-        // Sort descriptions so left is always <= right
-        .map(|(s, sd)| Ok((s.as_ref(), SelectionDesc::from_str(sd.as_ref())?.sort())))
-        .collect::<Result<Vec<(&str, SelectionDesc)>, KakMessage>>()?;
+//     let mut subselections = subselections
+//         .iter()
+//         .zip(subselections_desc.iter())
+//         // Bind selection with associated description
+//         // Sort descriptions so left is always <= right
+//         .map(|(s, sd)| Ok((s.as_ref(), SelectionDesc::from_str(sd.as_ref())?.sort())))
+//         .collect::<Result<Vec<(&str, SelectionDesc)>, KakMessage>>()?;
 
-    // Sort subselections by description
-    subselections.sort_by(|(_, ssd_a), (_, ssd_b)| ssd_a.cmp(ssd_b));
+//     // Sort subselections by description
+//     subselections.sort_by(|(_, ssd_a), (_, ssd_b)| ssd_a.cmp(ssd_b));
 
-    // For each selection, check if they contain any subselections
-    // If so, add them to the subselections vector
-    // TODO: This is O(n^2), but can be made more efficient since subselections is sorted
-    for (s, s_desc) in &mut sortable_selections {
-        for i in &subselections {
-            if s_desc.contains(&i.1) {
-                s.subselections.push(i.0);
-            }
-        }
-    }
+//     // For each selection, check if they contain any subselections
+//     // If so, add them to the subselections vector
+//     // TODO: This is O(n^2), but can be made more efficient since subselections is sorted
+//     for (s, s_desc) in &mut sortable_selections {
+//         for i in &subselections {
+//             if s_desc.contains(&i.1) {
+//                 s.subselections.push(i.0);
+//             }
+//         }
+//     }
 
-    sortable_selections.sort_by(|(a, _), (b, _)| {
-        // First, check if there are any subselection comparisons to be made
-        // If one has more subselections than the other, stop comparing
-        for (a_subsel, b_subsel) in a.subselections.iter().zip(b.subselections.iter()) {
-            match a_subsel.cmp(b_subsel) {
-                // These subselections are equal, so we can't do anything
-                Ordering::Equal => continue,
-                // We found a difference, so return the comparison
-                o => return o,
-            }
-        }
+//     sortable_selections.sort_by(|(a, _), (b, _)| {
+//         // First, check if there are any subselection comparisons to be made
+//         // If one has more subselections than the other, stop comparing
+//         for (a_subsel, b_subsel) in a.subselections.iter().zip(b.subselections.iter()) {
+//             match a_subsel.cmp(b_subsel) {
+//                 // These subselections are equal, so we can't do anything
+//                 Ordering::Equal => continue,
+//                 // We found a difference, so return the comparison
+//                 o => return o,
+//             }
+//         }
 
-        // No subselections mismatched, so compare the (possibly trimmed) content
-        a.content_comparison.cmp(b.content_comparison)
-    });
+//         // No subselections mismatched, so compare the (possibly trimmed) content
+//         a.content_comparison.cmp(b.content_comparison)
+//     });
 
-    Ok(sortable_selections.into_iter().map(|(s, _)| s).collect())
-}
+//     Ok(sortable_selections.into_iter().map(|(s, _)| s).collect())
+// }
 
 fn to_sortable_selection<'a, 'b>(
-    selection: &'a str,
+    selection: &'a SelectionWithDesc,
     options: &'b Options,
 ) -> SortableSelection<'a> {
     if options.no_skip_whitespace {
         SortableSelection {
-            content: selection,
-            content_comparison: selection,
+            selection: &selection,
+            content_comparison: selection.content.as_str(),
             subselections: vec![],
         }
     } else {
         SortableSelection {
-            content: selection,
-            content_comparison: selection.trim(),
+            selection: &selection,
+            content_comparison: selection.content.as_str().trim(),
             subselections: vec![],
         }
     }
@@ -120,46 +119,63 @@ fn to_sortable_selection<'a, 'b>(
 pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
     eprintln!("Got sort options: {:?}", options);
 
-    let subselections = options
+    // subselections is Some if the user requests it in subselections_register
+    // It will "exec z" to restore the selections before setting selections
+    // If subselections is None, "exec z" is not called
+    let subselections: Option<Vec<SelectionWithDesc>> = options
         .subselections_register
-        .map(|_r| -> Result<Vec<SelectionWithDesc>, KakMessage> {
-            let ret = get_selections_with_desc()?;
-            kak::exec("exec z")?;
-            Ok(ret)
+        .map::<Result<_, KakMessage>, _>(|c| {
+            let subselections = get_selections_with_desc()?;
+            kak::exec(&format!("exec {}", c))?;
+            Ok(subselections)
         })
         .transpose()?;
     let selections = get_selections_with_desc()?;
 
-    // let subselections: Option<(Vec<String>, Vec<String>)> = options
-    //     .subselections_register
-    //     .map::<Result<(Vec<String>, Vec<String>), KakMessage>, _>(|_c| {
-    //         let subselections = kak::response("%val{selections}")?;
-    //         let subselections_desc = kak::response("%val{selections_desc}")?;
-    //         // kak_exec(&format!("exec z",))?;
-    //         Ok((subselections, subselections_desc))
-    //     })
-    //     .transpose()?;
-    // let selections = kak::response("%val{selections}")?;
-
-    let mut zipped: Vec<SortableSelection<'_>> = match subselections {
-        Some(subselections) => {
-            let selections_desc = kak::response("%val{selections_desc}")?;
-
-            get_sortable_selections_subselections(
-                options,
-                &selections,
-                &selections_desc,
-                subselections,
-                subselections_desc,
-            )?
+    let mut zipped: Vec<SortableSelection<'_>> = match (&options.regex, &subselections) {
+        (Some(_), Some(_)) => {
+            return Err("Cannot pass regex and subselections register"
+                .to_string()
+                .into())
         }
-        None => selections
-            .iter()
-            .map(|s| to_sortable_selection(s, options))
-            .collect(),
+        (None, None) => {
+            // Do a regular sort on the content
+            selections
+                .iter()
+                .map(|s| to_sortable_selection(s, options))
+                .collect()
+        }
+        (Some(regex), None) => {
+            // Sort based on the regular expression
+            selections
+                .iter()
+                .map(|s| {
+                    let mut sortable_selection = to_sortable_selection(s, options);
+                    if let Some(regex_match) = (|| {
+                        let captures = regex.captures(sortable_selection.content_comparison)?;
+                        captures
+                            .get(1)
+                            .or_else(|| captures.get(0))
+                            .map(|m| m.as_str())
+                    })() {
+                        sortable_selection.content_comparison = regex_match;
+                    }
+
+                    sortable_selection
+                })
+                .collect()
+        }
+        (None, _) => {
+            // Sort based on subselections
+            return Err(KakMessage(
+                "Not yet implemented".to_string(),
+                Some("Sort by subselection is not yet implemented".to_string()),
+            ));
+        }
     };
 
     zipped.sort_by(|a, b| {
+        // First, try sorting by subselection. This won't iterate anything if either is None (regex and default mode)
         for (a_subselection, b_subselection) in a.subselections.iter().zip(b.subselections.iter()) {
             let comparison = if options.lexicographic_sort {
                 a_subselection.cmp(b_subselection)
@@ -172,6 +188,7 @@ pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
             }
         }
 
+        // Otherwise, default to comparing the content
         if options.lexicographic_sort {
             a.content_comparison.cmp(b.content_comparison)
         } else {
@@ -190,7 +207,7 @@ pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
     };
 
     for i in iter {
-        let new_selection = i.content.replace('\'', "''");
+        let new_selection = i.selection.content.replace('\'', "''");
         write!(f, " '{}'", new_selection)?;
     }
     write!(f, " ; exec R;")?;
