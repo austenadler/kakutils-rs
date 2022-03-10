@@ -1,6 +1,6 @@
-= rust-selection-sort.kak
+= kakutils-rs
 
-Sort selections by regular expression or lexicographically
+Sort by regular expression or lexicographically, find uniqes, shuffle, or evaluate rust selections without spawning a new command for each.
 
 == Example
 
@@ -24,19 +24,19 @@ stage('Publish (#4)') {}
 ----
 
 . Select the stage and stage body with: `%sstage<ret>MLM`
-. Sort the selection by step number with: `:sort-selections #\d+<ret>` (sort on whole capture) or `:sort-selections "'.+?#(\d).+?'"` (sort on first capture group, which contains only the digits)
-. Note if you just run `:sort-selections<ret>`
+. Sort the selection by step number with: `:utils sort #\d+<ret>` (sort on whole capture) or `:utils sort "'.+?#(\d).+?'"` (sort on first capture group, which contains only the digits)
+. Note if you just run `:utils sort<ret>`
 
 == Configuration
 
 [source,sh,title='sh']
 ----
-cargo install --git https://github.com/austenadler/rust-selection-sort.kak
+cargo install --git https://github.com/austenadler/kakutils-rs
 ----
 
 [source,title='kakrc']
 ----
-define-command sort-selections -params 0.. %{
+define-command utils -params 0.. %{
     eval -save-regs '"' %{
         reg dquote %val{selections}
         eval %sh{
@@ -52,14 +52,13 @@ define-command sort-selections -params 0.. %{
 == Usage
 
 * Make multiple selections
-* Run `sort-selections` to sort the selections lexicographically (TODO: implement a `sort -h` like feature)
-* Run `sort-selections REGEX` to sort by regex match
+* Run `utils sort` to sort the selections lexicographically
+* Run `utils sort REGEX` to sort by regex match
 ** If the regex does not contain a capture group
 ** If the regex contains at least one capture group
 
 == TODO
 
-* I don't know what will happen with multiline strings
-* Use 2 fifos for getting and sending selections since this should be faster than sending this to shell
-* Send options (`-S`) to cli from kak
+* I don't know what will happen with multiline strings and regex
 * Figure out how to change the `no_skip_whitespace` option name in the source
+* Get sort by selections working
