@@ -1,12 +1,15 @@
 use crate::{
     get_selections_desc, set_selections, set_selections_desc, KakMessage, SelectionWithDesc,
 };
+use regex::Regex;
 use std::{
     collections::{hash_map::DefaultHasher, BTreeSet},
     hash::{Hash, Hasher},
 };
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
+    #[clap(index = 1)]
+    regex: Option<Regex>,
     #[clap(short, long)]
     ignore_case: bool,
     // TODO: Can we invert a boolean? This name is terrible
@@ -23,12 +26,24 @@ pub fn uniq(options: &Options) -> Result<KakMessage, KakMessage> {
         .into_iter()
         // Create a BTreeSet of hashes of lines. This way, string content is not stored, but uniqueness can be determined
         .scan(BTreeSet::new(), |state, s| {
-            let key = if options.no_skip_whitespace {
+            // Strip whitespace if requested
+            let mut key = if options.no_skip_whitespace {
                 s.content.as_str()
             } else {
                 s.content.trim()
             };
 
+            if let Some(regex_match) = (|| {
+                let captures = options.regex.as_ref()?.captures(key)?;
+                captures
+                    .get(1)
+                    .or_else(|| captures.get(0))
+                    .map(|m| m.as_str())
+            })() {
+                key = regex_match;
+            }
+
+            // Ignore case if requested
             let key = if options.ignore_case {
                 key.to_lowercase()
             } else {
