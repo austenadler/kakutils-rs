@@ -1,11 +1,11 @@
-use crate::{kak_response, open_command_fifo, KakMessage};
+use crate::{get_selections, open_command_fifo, KakMessage};
 use evalexpr::{eval, Value};
 use std::io::Write;
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options;
 pub fn math_eval(_options: &Options) -> Result<KakMessage, KakMessage> {
-    let selections = kak_response("%val{selections}")?;
+    let selections = get_selections()?;
 
     let mut f = open_command_fifo()?;
     write!(f, "reg '\"'")?;

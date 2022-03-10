@@ -1,4 +1,6 @@
-use crate::{kak_response, open_command_fifo, KakMessage, SelectionDesc};
+use crate::{
+    get_selections_with_desc, kak, open_command_fifo, KakMessage, SelectionDesc, SelectionWithDesc,
+};
 use alphanumeric_sort::compare_str;
 use regex::Regex;
 use std::{cmp::Ordering, io::Write, str::FromStr};
@@ -41,17 +43,9 @@ struct SortableSelection<'a> {
 /// Gets a Vec of sortable selections with a given list of subselections and descriptions
 fn get_sortable_selections_subselections<'a, 'b, 'tmp, S: AsRef<str> + std::fmt::Debug + 'a>(
     options: &'b Options,
-    selections: &'a [S],
-    selections_desc: &'tmp [S],
-    subselections: &'a [S],
-    subselections_desc: &'tmp [S],
+    selections: Vec<SelectionWithDesc>,
+    subselections: Vec<SelectionWithDesc>,
 ) -> Result<Vec<SortableSelection<'a>>, KakMessage> {
-    if selections.len() != selections_desc.len() || subselections.len() != subselections_desc.len()
-    {
-        return Err(KakMessage ("Internal error".to_string(), Some(
-            format!("Counts for selections={}, selections_desc={}, subselections={}, subselections_desc={}",selections.len(),selections_desc.len(),subselections.len(),subselections_desc.len())
-        )));
-    }
     let mut sortable_selections = selections
         .iter()
         .zip(selections_desc.iter())
@@ -126,20 +120,30 @@ fn to_sortable_selection<'a, 'b>(
 pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
     eprintln!("Got sort options: {:?}", options);
 
-    let subselections: Option<(Vec<String>, Vec<String>)> = options
+    let subselections = options
         .subselections_register
-        .map::<Result<(Vec<String>, Vec<String>), KakMessage>, _>(|_c| {
-            let subselections = kak_response("%val{selections}")?;
-            let subselections_desc = kak_response("%val{selections_desc}")?;
-            // kak_exec(&format!("exec z",))?;
-            Ok((subselections, subselections_desc))
+        .map(|_r| -> Result<Vec<SelectionWithDesc>, KakMessage> {
+            let ret = get_selections_with_desc()?;
+            kak::exec("exec z")?;
+            Ok(ret)
         })
         .transpose()?;
-    let selections = kak_response("%val{selections}")?;
+    let selections = get_selections_with_desc()?;
+
+    // let subselections: Option<(Vec<String>, Vec<String>)> = options
+    //     .subselections_register
+    //     .map::<Result<(Vec<String>, Vec<String>), KakMessage>, _>(|_c| {
+    //         let subselections = kak::response("%val{selections}")?;
+    //         let subselections_desc = kak::response("%val{selections_desc}")?;
+    //         // kak_exec(&format!("exec z",))?;
+    //         Ok((subselections, subselections_desc))
+    //     })
+    //     .transpose()?;
+    // let selections = kak::response("%val{selections}")?;
 
     let mut zipped: Vec<SortableSelection<'_>> = match subselections {
-        Some((ref subselections, ref subselections_desc)) => {
-            let selections_desc = kak_response("%val{selections_desc}")?;
+        Some(subselections) => {
+            let selections_desc = kak::response("%val{selections_desc}")?;
 
             get_sortable_selections_subselections(
                 options,
