@@ -13,6 +13,7 @@ keywords = ["cli", "kakoune"]
 regex = "1"
 clap = {version = "3", features = ["derive", "env"]}
 alphanumeric-sort = "1"
+# shellwords = {version = "1", path = "../../../git/rust-shellwords/"}
 shellwords = "1"
 rand = "0.8"
 evalexpr = "7"

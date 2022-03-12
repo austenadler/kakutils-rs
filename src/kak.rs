@@ -1,4 +1,5 @@
 use crate::{get_var, KakMessage};
+// use shellwords::ShellWordsIterator;
 use std::{
     fmt,
     fs::{self, File, OpenOptions},
@@ -260,6 +261,17 @@ pub fn response(msg: &str) -> Result<Vec<String>, KakMessage> {
 
     Ok(selections)
 }
+
+// pub fn response_iter(msg: &str) -> Result<ShellWordsIterator, KakMessage> {
+//     exec(&format!(
+//         "echo -quoting shell -to-file {} -- {msg}",
+//         get_var("kak_response_fifo")?
+//     ))?;
+
+//     Ok(shellwords::split_iter(&fs::read_to_string(&get_var(
+//         "kak_response_fifo",
+//     )?)?))
+// }
 
 /// # Errors
 ///
