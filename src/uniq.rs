@@ -24,7 +24,7 @@ pub fn uniq(options: &Options) -> Result<KakMessage, KakMessage> {
     // Set the new selection types
     let new_selections: Vec<Option<SelectionWithDesc>> = selections
         .into_iter()
-        // Create a BTreeSet of hashes of lines. This way, string content is not stored, but uniqueness can be determined
+        // Create a BTreeSet of hashes of selections. This way, string content is not stored, but uniqueness can be determined
         .scan(BTreeSet::new(), |state, s| {
             // Strip whitespace if requested
             let mut key = if options.no_skip_whitespace {

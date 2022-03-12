@@ -40,15 +40,12 @@ cargo install --git https://github.com/austenadler/kakutils-rs
 
 [source,title='kakrc']
 ----
-define-command utils -params 0.. %{
+define-command utils -params .. %{
     eval -save-regs '"' %{
-        reg dquote %val{selections}
         eval %sh{
-            regex="${1:-.*}"
             # use kak_command_fifo kak_response_fifo;
-            ~/syncthing/code/kakutils-rs/target/debug/kakutils-rs sort "$regex" -- "$@"
+            kakutils-rs "$@"
         }
-        exec R
     }
 }
 ----
