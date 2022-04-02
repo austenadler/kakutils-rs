@@ -14,6 +14,7 @@ mod kak;
 mod math_eval;
 mod shuf;
 mod sort;
+mod trim;
 mod uniq;
 use clap::{Parser, Subcommand};
 use errors::KakMessage;
@@ -39,6 +40,7 @@ enum Commands {
     Uniq(uniq::Options),
     #[clap(visible_aliases = &["bc", "eval"])]
     MathEval(math_eval::Options),
+    Trim(trim::Options),
 }
 
 fn main() {
@@ -73,6 +75,7 @@ fn run() -> Result<KakMessage, KakMessage> {
         Commands::Shuf(o) => shuf::shuf(o),
         Commands::Uniq(o) => uniq::uniq(o),
         Commands::MathEval(o) => math_eval::math_eval(o),
+        Commands::Trim(o) => trim::trim(o),
     }
 }
 
