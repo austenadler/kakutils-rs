@@ -186,7 +186,7 @@ pub fn get_selections_with_desc() -> Result<Vec<SelectionWithDesc>, KakMessage> 
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn set_selections<'a, I, S: 'a>(selections: I) -> Result<(), KakMessage>
+pub fn set_selections<'a, I, S: 'a + ?Sized>(selections: I) -> Result<(), KakMessage>
 where
     I: IntoIterator<Item = &'a S>,
     S: AsRef<str> + fmt::Display,

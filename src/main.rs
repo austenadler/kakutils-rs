@@ -14,6 +14,7 @@ mod kak;
 mod math_eval;
 mod shuf;
 mod sort;
+mod stdin;
 mod trim;
 mod uniq;
 mod xargs;
@@ -43,6 +44,7 @@ enum Commands {
     MathEval(math_eval::Options),
     Trim(trim::Options),
     Xargs(xargs::Options),
+    Stdin(stdin::Options),
 }
 
 fn main() {
@@ -79,6 +81,7 @@ fn run() -> Result<KakMessage, KakMessage> {
         Commands::MathEval(o) => math_eval::math_eval(o),
         Commands::Trim(o) => trim::trim(o),
         Commands::Xargs(o) => xargs::xargs(o),
+        Commands::Stdin(o) => stdin::stdin(o),
     }
 }
 

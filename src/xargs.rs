@@ -8,10 +8,9 @@ pub struct Options {
     args: Vec<String>,
 }
 pub fn xargs(options: &Options) -> Result<KakMessage, KakMessage> {
-    // let mut selections = get_selections()?;
-
     let mut child = Command::new("xargs")
         .arg("-0")
+        .arg("--")
         .args(&options.args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -21,20 +20,27 @@ pub fn xargs(options: &Options) -> Result<KakMessage, KakMessage> {
     let mut stdin = child.stdin.take().expect("Failed to open stdin");
     let handle = std::thread::spawn(move || -> Result<(), KakMessage> {
         for s in get_selections_with_desc()? {
+            eprintln!("Got selection {}", s.content);
             write!(stdin, "{}\0", s.content)?;
-            // stdin
-            // .write_all(&.as_bytes())
-            // .expect("Failed to write to stdin");
-            // stdin.write_all(&[b'\0']).expect("Failed to write to stdin");
         }
         Ok(())
     });
 
-    set_selections(BufReader::new(child.stdout.take().expect("Failed to get stdout")).split(b'\0'));
+    eprintln!("About t oreadvv");
 
-    // stdout.
+    set_selections(
+        BufReader::new(child.stdout.take().ok_or("Failed to get stdout")?)
+            .split(b'\0')
+            .map(|s| Ok(String::from_utf8_lossy(&s?).into_owned()))
+            .collect::<Result<Vec<_>, KakMessage>>()?
+            .iter(),
+    )?;
 
-    // set_selections(selections.iter())?;
+    // Wait for the background process to exit
+    // TODO: Do not use a string
+    handle
+        .join()
+        .map_err(|_e| "Could not join background process")??;
 
-    Ok(KakMessage(format!("Shuf  selections",), None))
+    Ok("xargs selections".into())
 }

@@ -18,6 +18,7 @@ pub struct Options {
     reverse: bool,
     #[clap(short, long)]
     ignore_case: bool,
+    // TODO: Sort by character ([xba] => [abx])
 }
 
 fn invert_bool(s: &str) -> Result<bool, &'static str> {
@@ -117,8 +118,6 @@ fn to_sortable_selection<'a, 'b>(
 }
 
 pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
-    eprintln!("Got sort options: {:?}", options);
-
     // subselections is Some if the user requests it in subselections_register
     // It will "exec z" to restore the selections before setting selections
     // If subselections is None, "exec z" is not called

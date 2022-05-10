@@ -18,6 +18,12 @@ impl From<String> for KakMessage {
     }
 }
 
+impl From<&str> for KakMessage {
+    fn from(err: &str) -> Self {
+        Self(err.to_string(), None)
+    }
+}
+
 impl From<shellwords::MismatchedQuotes> for KakMessage {
     fn from(err: shellwords::MismatchedQuotes) -> Self {
         Self("Corrupt kak response".to_string(), Some(err.to_string()))
