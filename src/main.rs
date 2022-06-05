@@ -7,7 +7,6 @@
 #![allow(clippy::struct_excessive_bools)]
 
 mod errors;
-mod kak;
 mod math_eval;
 mod shuf;
 mod sort;
@@ -16,7 +15,6 @@ mod trim;
 mod uniq;
 mod xargs;
 use clap::{Parser, Subcommand};
-pub use kak::*;
 use kakplugin::{display_message, get_var, KakError};
 
 #[derive(Parser, Debug)]
