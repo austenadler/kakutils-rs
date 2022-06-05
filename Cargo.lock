@@ -125,12 +125,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "kakplugin"
+version = "0.1.0"
+dependencies = [
+ "shellwords",
+]
+
+[[package]]
 name = "kakutils-rs"
 version = "0.1.0"
 dependencies = [
  "alphanumeric-sort",
  "clap",
  "evalexpr",
+ "kakplugin",
  "rand",
  "regex",
  "shellwords",

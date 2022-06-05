@@ -48,6 +48,13 @@ enum Commands {
 }
 
 fn main() {
+    if get_var("kak_command_fifo")
+        .and(get_var("kak_response_fifo"))
+        .is_err()
+    {
+        panic!("Environment variable kak_command_fifo and kak_response_fifo must be set");
+    }
+
     let msg = match run() {
         Ok(msg) => msg,
         Err(msg) => {

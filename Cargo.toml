@@ -1,3 +1,5 @@
+# syntax = denzp/cargo-wharf-frontend
+
 # cargo-features = ["strip"]
 [package]
 name = "kakutils-rs"
@@ -6,6 +8,25 @@ edition = "2021"
 license = "MIT"
 readme = "README.adoc"
 keywords = ["cli", "kakoune"]
+
+[workspace]
+members = [
+    ".",
+    "./kakplugin/",
+]
+
+[[package.metadata.wharf.binary]]
+name = "kakutils-rs"
+destination = "/bin/kakutils-rs"
+
+[package.metadata.wharf.builder]
+# image = "rust"
+# image = "ekidd/rust-musl-builder"
+image = "clux/muslrust:nightly-2021-03-02"
+target = "x86_64-unknown-linux-musl"
+
+[package.metadata.wharf.output]
+image = "scratch"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -17,6 +38,7 @@ alphanumeric-sort = "1"
 shellwords = "1"
 rand = "0.8"
 evalexpr = "7"
+kakplugin = {path = "./kakplugin/"}
 
 [profile.release]
 lto = true

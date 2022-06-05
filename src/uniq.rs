@@ -1,5 +1,6 @@
-use crate::{
-    get_selections_desc, set_selections, set_selections_desc, KakMessage, SelectionWithDesc,
+use kakplugin::{
+    get_selections_desc, get_selections_with_desc, set_selections, set_selections_desc, KakError,
+    SelectionWithDesc,
 };
 use regex::Regex;
 use std::{
@@ -16,8 +17,8 @@ pub struct Options {
     #[clap(short = 'S', long)]
     no_skip_whitespace: bool,
 }
-pub fn uniq(options: &Options) -> Result<KakMessage, KakMessage> {
-    let mut selections = crate::get_selections_with_desc()?;
+pub fn uniq(options: &Options) -> Result<String, KakError> {
+    let mut selections = get_selections_with_desc()?;
     // Sort selections so the first element is the unique one, not an arbitrary one based on primary selection
     selections.sort_by_key(|s| s.desc.sort());
 
@@ -89,8 +90,8 @@ pub fn uniq(options: &Options) -> Result<KakMessage, KakMessage> {
     let old_count = new_selections.len();
     let new_count = new_selections.iter().flatten().count();
 
-    Ok(KakMessage(
-        format!("{} unique selections out of {}", new_count, old_count),
-        None,
+    Ok(format!(
+        "{} unique selections out of {}",
+        new_count, old_count
     ))
 }
