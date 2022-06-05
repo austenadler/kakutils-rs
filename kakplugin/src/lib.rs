@@ -127,7 +127,10 @@ where
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn send_message<S: AsRef<str>>(message: S, debug_message: Option<S>) -> Result<(), KakError> {
+pub fn display_message<S: AsRef<str>>(
+    message: S,
+    debug_message: Option<S>,
+) -> Result<(), KakError> {
     let msg_str = message.as_ref().replace('\'', "''");
     {
         let mut f = open_command_fifo()?;
@@ -186,7 +189,7 @@ pub fn open_command_fifo() -> Result<BufWriter<File>, KakError> {
 /// # Errors
 ///
 /// Will return `Err` if requested environment variable is not unicode or not present
-fn get_var(var_name: &str) -> Result<String, KakError> {
+pub fn get_var(var_name: &str) -> Result<String, KakError> {
     env::var(var_name).map_err(|e| match e {
         env::VarError::NotPresent => {
             KakError::EnvVarNotSet(format!("Env var {} is not defined", var_name))

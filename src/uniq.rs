@@ -34,6 +34,7 @@ pub fn uniq(options: &Options) -> Result<String, KakError> {
                 s.content.trim()
             };
 
+            // If they requested a regex match, set the key to the string slice of that match
             if let Some(regex_match) = (|| {
                 let captures = options.regex.as_ref()?.captures(key)?;
                 captures
@@ -67,12 +68,9 @@ pub fn uniq(options: &Options) -> Result<String, KakError> {
         })
         .collect();
 
-    // Preallocate so the content and string have the same type, but allocation is not repeated
-    // TODO: Do we really have to do this?
-    let empty_string = String::default();
     set_selections(new_selections.iter().map(|i| match i {
         Some(s) => &s.content,
-        None => &empty_string,
+        None => "",
     }))?;
 
     // Deselect all `None` strings (all rows that have been seen before)

@@ -1,5 +1,5 @@
-use crate::{get_selections_with_desc, kak, open_command_fifo, KakMessage, SelectionWithDesc};
 use alphanumeric_sort::compare_str;
+use kakplugin::{self, get_selections_with_desc, open_command_fifo, KakError, SelectionWithDesc};
 use regex::Regex;
 use std::{cmp::Ordering, io::Write};
 
@@ -117,15 +117,15 @@ fn to_sortable_selection<'a, 'b>(
     }
 }
 
-pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
+pub fn sort(options: &Options) -> Result<String, KakError> {
     // subselections is Some if the user requests it in subselections_register
     // It will "exec z" to restore the selections before setting selections
     // If subselections is None, "exec z" is not called
     let subselections: Option<Vec<SelectionWithDesc>> = options
         .subselections_register
-        .map::<Result<_, KakMessage>, _>(|c| {
+        .map::<Result<_, KakError>, _>(|c| {
             let subselections = get_selections_with_desc()?;
-            kak::exec(&format!("exec {}", c))?;
+            kakplugin::exec(&format!("exec {}", c))?;
             Ok(subselections)
         })
         .transpose()?;
@@ -133,9 +133,9 @@ pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
 
     let mut zipped: Vec<SortableSelection<'_>> = match (&options.regex, &subselections) {
         (Some(_), Some(_)) => {
-            return Err("Cannot pass regex and subselections register"
-                .to_string()
-                .into())
+            return Err(KakError::Custom(
+                "Cannot pass regex and subselections register".to_string(),
+            ))
         }
         (None, None) => {
             // Do a regular sort on the content
@@ -166,9 +166,8 @@ pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
         }
         (None, _) => {
             // Sort based on subselections
-            return Err(KakMessage(
-                "Not yet implemented".to_string(),
-                Some("Sort by subselection is not yet implemented".to_string()),
+            return Err(KakError::NotImplemented(
+                "Sort by subselection is not yet implemented",
             ));
         }
     };
@@ -212,8 +211,5 @@ pub fn sort(options: &Options) -> Result<KakMessage, KakMessage> {
     write!(f, " ; exec R;")?;
     f.flush()?;
 
-    Ok(KakMessage(
-        format!("Sorted {} selections", zipped.len()),
-        None,
-    ))
+    Ok(format!("Sorted {} selections", zipped.len()))
 }

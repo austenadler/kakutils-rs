@@ -1,8 +1,8 @@
-use crate::{get_selections, set_selections, KakMessage};
+use kakplugin::{get_selections, set_selections, KakError};
 use rand::{seq::SliceRandom, thread_rng};
 #[derive(clap::StructOpt, Debug)]
 pub struct Options;
-pub fn shuf(_options: &Options) -> Result<KakMessage, KakMessage> {
+pub fn shuf(_options: &Options) -> Result<String, KakError> {
     let mut selections = get_selections()?;
     let mut rng = thread_rng();
 
@@ -10,8 +10,5 @@ pub fn shuf(_options: &Options) -> Result<KakMessage, KakMessage> {
 
     set_selections(selections.iter())?;
 
-    Ok(KakMessage(
-        format!("Shuf {} selections", selections.len()),
-        None,
-    ))
+    Ok(format!("Shuf {} selections", selections.len()))
 }

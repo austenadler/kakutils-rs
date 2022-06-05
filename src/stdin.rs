@@ -1,4 +1,4 @@
-use crate::{get_selections_with_desc, set_selections, KakMessage};
+use kakplugin::{get_selections_with_desc, set_selections, KakError};
 use std::{
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
@@ -8,7 +8,7 @@ pub struct Options {
     command: String,
     args: Vec<String>,
 }
-pub fn stdin(options: &Options) -> Result<KakMessage, KakMessage> {
+pub fn stdin(options: &Options) -> Result<String, KakError> {
     let mut child = Command::new(&options.command)
         .args(&options.args)
         .stdin(Stdio::piped())
@@ -17,7 +17,7 @@ pub fn stdin(options: &Options) -> Result<KakMessage, KakMessage> {
         .expect("Failed to spawn child process");
 
     let mut child_stdin = child.stdin.take().expect("Failed to open stdin");
-    let handle = std::thread::spawn(move || -> Result<(), KakMessage> {
+    let handle = std::thread::spawn(move || -> Result<(), KakError> {
         for s in get_selections_with_desc()? {
             eprintln!("Got selection {}", s.content);
             write!(child_stdin, "{}\0", s.content)?;
@@ -29,7 +29,7 @@ pub fn stdin(options: &Options) -> Result<KakMessage, KakMessage> {
         BufReader::new(child.stdout.take().expect("Failed to get stdout"))
             .split(b'\0')
             .map(|s| Ok(String::from_utf8_lossy(&s?).into_owned()))
-            .collect::<Result<Vec<_>, KakMessage>>()?
+            .collect::<Result<Vec<_>, KakError>>()?
             .iter(),
     )?;
 
@@ -37,7 +37,7 @@ pub fn stdin(options: &Options) -> Result<KakMessage, KakMessage> {
     // TODO: Do not use a string
     handle
         .join()
-        .map_err(|_e| String::from("Could not join background process"))??;
+        .map_err(|_e| KakError::Custom("Could not join background process".to_string()))??;
 
     Ok("stdin selections".into())
 }

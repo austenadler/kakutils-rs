@@ -1,10 +1,10 @@
-use crate::{get_selections, open_command_fifo, KakMessage};
 use evalexpr::{eval, Value};
+use kakplugin::{get_selections, open_command_fifo, KakError};
 use std::io::Write;
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options;
-pub fn math_eval(_options: &Options) -> Result<KakMessage, KakMessage> {
+pub fn math_eval(_options: &Options) -> Result<String, KakError> {
     let selections = get_selections()?;
 
     let mut f = open_command_fifo()?;
@@ -38,8 +38,5 @@ pub fn math_eval(_options: &Options) -> Result<KakMessage, KakMessage> {
     write!(f, " ; exec R;")?;
     f.flush()?;
 
-    Ok(KakMessage(
-        format!("MathEval {} selections", selections.len()),
-        None,
-    ))
+    Ok(format!("MathEval {} selections", selections.len()))
 }

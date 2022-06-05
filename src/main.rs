@@ -6,9 +6,6 @@
 #![allow(clippy::multiple_crate_versions)]
 #![allow(clippy::struct_excessive_bools)]
 
-// #![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
-// #![allow(dead_code, unused_imports)]
-
 mod errors;
 mod kak;
 mod math_eval;
@@ -19,9 +16,8 @@ mod trim;
 mod uniq;
 mod xargs;
 use clap::{Parser, Subcommand};
-use errors::KakMessage;
 pub use kak::*;
-use std::env;
+use kakplugin::{display_message, get_var, KakError};
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -55,31 +51,22 @@ fn main() {
         panic!("Environment variable kak_command_fifo and kak_response_fifo must be set");
     }
 
-    let msg = match run() {
-        Ok(msg) => msg,
-        Err(msg) => {
-            // TODO: Do not do a string allocation here
-            eprintln!(
-                "{} (Debug info: {})",
-                msg.0,
-                msg.1.as_ref().map_or("", String::as_str)
-            );
-            msg
-        }
+    let (msg, msg_details) = match run() {
+        Ok(msg) => (msg, None),
+        Err(e) => (e.to_string(), Some(e.details())),
     };
 
-    if let Err(e) = send_message(&msg) {
-        println!("{}", e);
+    if let Err(display_error) = display_message(&msg, msg_details.as_ref()) {
+        // If there was an error sending the display message to kakoune, print it out
+        eprintln!(
+            "Error sending message '{msg:?}' (details: '{msg_details:?}') to kak: {display_error:?}"
+        );
     }
 }
 
-fn run() -> Result<KakMessage, KakMessage> {
-    let options = Cli::try_parse().map_err(|e| {
-        KakMessage(
-            "Error parsing arguments".to_string(),
-            Some(format!("Could not parse: {}", e)),
-        )
-    })?;
+fn run() -> Result<String, KakError> {
+    let options =
+        Cli::try_parse().map_err(|e| KakError::Parse(format!("Argument parse error: {e}")))?;
 
     match &options.command {
         Commands::Sort(o) => sort::sort(o),
@@ -90,18 +77,4 @@ fn run() -> Result<KakMessage, KakMessage> {
         Commands::Xargs(o) => xargs::xargs(o),
         Commands::Stdin(o) => stdin::stdin(o),
     }
-}
-
-/// # Errors
-///
-/// Will return `Err` if requested environment variable is not unicode or not present
-pub fn get_var(var_name: &str) -> Result<String, KakMessage> {
-    env::var(var_name).map_err(|e| match e {
-        env::VarError::NotPresent => {
-            KakMessage(format!("Env var {} is not defined", var_name), None)
-        }
-        env::VarError::NotUnicode(_) => {
-            KakMessage(format!("Env var {} is not unicode", var_name), None)
-        }
-    })
 }
