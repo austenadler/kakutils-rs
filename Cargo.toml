@@ -39,6 +39,8 @@ shellwords = "1"
 rand = "0.8"
 evalexpr = "7"
 kakplugin = {path = "./kakplugin/"}
+linked-hash-map = "0.5.4"
+linked_hash_set = "0.1.4"
 
 [profile.release]
 lto = true

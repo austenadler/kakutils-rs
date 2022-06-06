@@ -125,7 +125,7 @@ pub fn sort(options: &Options) -> Result<String, KakError> {
         .subselections_register
         .map::<Result<_, KakError>, _>(|c| {
             let subselections = get_selections_with_desc()?;
-            kakplugin::exec(&format!("exec {}", c))?;
+            kakplugin::cmd(&format!("exec {}", c))?;
             Ok(subselections)
         })
         .transpose()?;

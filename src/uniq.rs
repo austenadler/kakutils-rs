@@ -1,12 +1,11 @@
+use crate::utils;
 use kakplugin::{
     get_selections_desc, get_selections_with_desc, set_selections, set_selections_desc, KakError,
     SelectionWithDesc,
 };
 use regex::Regex;
-use std::{
-    collections::{hash_map::DefaultHasher, BTreeSet},
-    hash::{Hash, Hasher},
-};
+use std::collections::BTreeSet;
+
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
     #[clap(index = 1)]
@@ -26,40 +25,18 @@ pub fn uniq(options: &Options) -> Result<String, KakError> {
     let new_selections: Vec<Option<SelectionWithDesc>> = selections
         .into_iter()
         // Create a BTreeSet of hashes of selections. This way, string content is not stored, but uniqueness can be determined
-        .scan(BTreeSet::new(), |state, s| {
-            // Strip whitespace if requested
-            let mut key = if options.no_skip_whitespace {
-                s.content.as_str()
-            } else {
-                s.content.trim()
-            };
-
-            // If they requested a regex match, set the key to the string slice of that match
-            if let Some(regex_match) = (|| {
-                let captures = options.regex.as_ref()?.captures(key)?;
-                captures
-                    .get(1)
-                    .or_else(|| captures.get(0))
-                    .map(|m| m.as_str())
-            })() {
-                key = regex_match;
-            }
-
-            // Ignore case if requested
-            let key = if options.ignore_case {
-                key.to_lowercase()
-            } else {
-                // TODO: Do I really need to clone this?
-                key.to_string()
-            };
-
-            let mut hasher = DefaultHasher::new();
-            key.hash(&mut hasher);
+        .scan(BTreeSet::new(), |state, sd| {
+            let hash = utils::get_hash(
+                &sd.content,
+                !options.no_skip_whitespace,
+                options.regex.as_ref(),
+                options.ignore_case,
+            );
 
             // Try inserting to the hash
-            if state.insert(hasher.finish()) {
+            if state.insert(hash) {
                 // True if this is a string we haven't seen before
-                Some(Some(s))
+                Some(Some(sd))
             } else {
                 // Nothing was inserted because we already saw this string
                 // Return Some(None) so the iterator can continue

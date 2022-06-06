@@ -1,12 +1,13 @@
 mod errors;
-mod types;
+pub mod types;
 pub use errors::KakError;
 use std::{
-    env, fmt,
+    env,
     fs::{self, File, OpenOptions},
     io::{BufWriter, Write},
     str::FromStr,
 };
+use types::Register;
 pub use types::{
     AnchorPosition, Selection, SelectionDesc, SelectionWithDesc, SelectionWithSubselections,
 };
@@ -95,14 +96,14 @@ pub fn get_selections_with_desc() -> Result<Vec<SelectionWithDesc>, KakError> {
 pub fn set_selections<'a, I, S: 'a + ?Sized>(selections: I) -> Result<(), KakError>
 where
     I: IntoIterator<Item = &'a S>,
-    S: AsRef<str> + fmt::Display,
+    S: AsRef<str>,
 {
     let mut f = open_command_fifo()?;
-    write!(f, "reg '\"'")?;
+    write!(f, "set-register '\"'")?;
     for i in selections {
-        write!(f, " '{}'", i.as_ref().replace('\'', "''"))?;
+        write!(f, " '{}'", escape(i))?;
     }
-    write!(f, "; exec R;")?;
+    write!(f, "; execute-keys R;")?;
     f.flush()?;
     Ok(())
 }
@@ -131,7 +132,7 @@ pub fn display_message<S: AsRef<str>>(
     message: S,
     debug_message: Option<S>,
 ) -> Result<(), KakError> {
-    let msg_str = message.as_ref().replace('\'', "''");
+    let msg_str = escape(message);
     {
         let mut f = open_command_fifo()?;
 
@@ -139,32 +140,36 @@ pub fn display_message<S: AsRef<str>>(
         write!(f, "echo -debug '{}';", msg_str)?;
 
         if let Some(debug_msg_str) = &debug_message.as_ref() {
-            write!(
-                f,
-                "echo -debug '{}';",
-                debug_msg_str.as_ref().replace('\'', "''")
-            )?;
+            write!(f, "echo -debug '{}';", escape(debug_msg_str))?;
         }
         f.flush()?;
     }
     Ok(())
 }
 
+pub fn escape<S: AsRef<str>>(s: S) -> String {
+    s.as_ref().replace('\'', "''")
+}
+
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened or written to
-pub fn exec(cmd: &str) -> Result<(), KakError> {
+pub fn cmd(cmd: &str) -> Result<(), KakError> {
     let mut f = open_command_fifo()?;
 
-    write!(f, "{}", cmd)?;
+    write!(f, "{};", cmd)?;
     f.flush().map_err(Into::into)
+}
+
+pub fn restore_register(r: &Register) -> Result<(), KakError> {
+    cmd(&format!("execute-keys '\"{}z'", r.kak_escaped()))
 }
 
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened or written to
 pub fn response(msg: &str) -> Result<Vec<String>, KakError> {
-    exec(&format!(
+    cmd(&format!(
         "echo -quoting shell -to-file {} -- {msg}",
         get_var("kak_response_fifo")?
     ))?;

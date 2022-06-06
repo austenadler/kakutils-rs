@@ -34,7 +34,6 @@ pub fn stdin(options: &Options) -> Result<String, KakError> {
     )?;
 
     // Wait for the background process to exit
-    // TODO: Do not use a string
     handle
         .join()
         .map_err(|_e| KakError::Custom("Could not join background process".to_string()))??;
