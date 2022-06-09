@@ -5,20 +5,23 @@ use std::{cmp::Ordering, io::Write};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
-    #[clap(index = 1)]
+    #[clap(index = 1, help = "Optional regex comparison key")]
     regex: Option<Regex>,
-    #[clap(short = 's', long)]
+    #[clap(
+        short = 's',
+        long,
+        help = "Optional register for using subselection ma tching"
+    )]
     subselections_register: Option<char>,
     // TODO: Can we invert a boolean? This name is terrible
-    #[clap(short = 'S', long, parse(try_from_str = invert_bool), default_value_t)]
+    #[clap(short = 'S', long, parse(try_from_str = invert_bool), default_value_t, help = "Do not treat trimmed value of selections when sorting")]
     no_skip_whitespace: bool,
-    #[clap(short, long)]
+    #[clap(short, long, help = "Sort numbers lexicographically")]
     lexicographic_sort: bool,
-    #[clap(short, long)]
+    #[clap(short, long, help = "Reverse sorting")]
     reverse: bool,
-    #[clap(short, long)]
+    #[clap(short, long, help = "Ignore case when sorting")]
     ignore_case: bool,
-    // TODO: Sort by character ([xba] => [abx])
 }
 
 fn invert_bool(s: &str) -> Result<bool, &'static str> {

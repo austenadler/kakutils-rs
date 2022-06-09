@@ -8,12 +8,12 @@ use std::collections::BTreeSet;
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
-    #[clap(index = 1)]
+    #[clap(index = 1, help = "Optional regex to compare unique elements")]
     regex: Option<Regex>,
-    #[clap(short, long)]
+    #[clap(short, long, help = "Ignore the case when comparing")]
     ignore_case: bool,
     // TODO: Can we invert a boolean? This name is terrible
-    #[clap(short = 'S', long)]
+    #[clap(short = 'S', long, help = "Do not skip whitespace when comparing")]
     no_skip_whitespace: bool,
 }
 pub fn uniq(options: &Options) -> Result<String, KakError> {

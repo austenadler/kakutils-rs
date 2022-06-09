@@ -3,11 +3,15 @@ use std::io::Write;
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
-    #[clap(short, long)]
+    #[clap(short, long, help = "Trim from left")]
     left: bool,
-    #[clap(short, long)]
+    #[clap(short, long, help = "Trim right side")]
     right: bool,
-    #[clap(short, long)]
+    #[clap(
+        short,
+        long,
+        help = "If selection ends in a newline, do not add the newline back after trimming"
+    )]
     no_preserve_newline: bool,
 }
 

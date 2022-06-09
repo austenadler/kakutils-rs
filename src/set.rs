@@ -11,10 +11,17 @@ use std::{collections::HashSet, io::Write, str::FromStr};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
-    #[clap(min_values = 1, max_values = 3)]
+    #[clap(
+        min_values = 1,
+        max_values = 3,
+        help = "Register operation and operand. Empty register is current selection. Example: 'a-b' or '+b'"
+    )]
     args: Vec<String>,
 
-    #[clap(short = 'T')]
+    #[clap(
+        short = 'T',
+        help = "Do not trim the selections before doing set operations"
+    )]
     no_trim: bool,
     // #[clap(short, long)]
     // regex: Option<Regex>,
