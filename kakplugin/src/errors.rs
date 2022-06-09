@@ -43,7 +43,7 @@ impl ToString for KakError {
                 Self::KakResponse(_) => "Invalid kak response",
                 Self::Io(_) => "IO error",
                 Self::NotImplemented(_) => "Not Implemented",
-                Self::Custom(s) => &s,
+                Self::Custom(s) => s,
             }
         )
     }

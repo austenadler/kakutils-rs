@@ -33,7 +33,7 @@ enum Operation {
 }
 
 impl Operation {
-    pub fn to_char(&self) -> char {
+    pub const fn to_char(&self) -> char {
         match self {
             Self::Intersect => '&',
             Self::Subtract => '-',
@@ -181,8 +181,8 @@ fn compare(
     )?;
 
     for k in key_set_operation_result {
-        let left_count = left_ordered_counts.get(&k as &str).unwrap_or(&0);
-        let right_count = right_ordered_counts.get(&k as &str).unwrap_or(&0);
+        let left_count = left_ordered_counts.get(k as &str).unwrap_or(&0);
+        let right_count = right_ordered_counts.get(k as &str).unwrap_or(&0);
 
         write!(
             f,
@@ -217,7 +217,7 @@ fn compare(
 fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<Selection, usize> {
     let mut ret = LinkedHashMap::new();
 
-    for i in sels.into_iter() {
+    for i in sels {
         let key = if options.no_trim {
             i
         } else {
@@ -242,22 +242,22 @@ fn key_set_operation<'a>(
 ) -> LinkedHashSet<&'a Selection> {
     match operation {
         Operation::Intersect => left_keys
-            .intersection(&right_keys)
+            .intersection(right_keys)
             // .into_iter()
             // TODO: Remove this
-            .cloned()
+            .copied()
             .collect(),
         Operation::Subtract => left_keys
-            .difference(&right_keys)
+            .difference(right_keys)
             .into_iter()
             // TODO: Remove this
-            .cloned()
+            .copied()
             .collect(),
         Operation::Compare | Operation::Union => left_keys
-            .union(&right_keys)
+            .union(right_keys)
             .into_iter()
             // TODO: Remove this
-            .cloned()
+            .copied()
             .collect(),
         // TODO: Symmetric difference?
     }
@@ -268,11 +268,11 @@ fn parse_arguments(args: &[String]) -> Result<(Register, Operation, Register), K
         // They gave us something like "a-b" or "c?d"
         args.iter()
             .flat_map(|s: &String| s.trim().chars())
-            .map(|c| String::from(c))
+            .map(String::from)
             .collect::<Vec<String>>()
     } else {
         // They gave us something like "a - b" or "c compare d"
-        args.iter().cloned().collect()
+        args.to_vec()
     };
     let (left_register, middle, right_register) = match &args[..] {
         [l, r] => {
@@ -285,9 +285,9 @@ fn parse_arguments(args: &[String]) -> Result<(Register, Operation, Register), K
                 (Ok(_), Ok(_)) => Err(KakError::Custom(format!(
                     "Arguments '{l}' and '{r}' cannot both be operations"
                 ))),
-                (Err(_), Err(_)) => Err(KakError::Custom(format!(
-                    "One argument must be an operation"
-                ))),
+                (Err(_), Err(_)) => Err(KakError::Custom(
+                    "One argument must be an operation".to_string(),
+                )),
             }
         }
         [l, middle, r] => {
@@ -298,9 +298,9 @@ fn parse_arguments(args: &[String]) -> Result<(Register, Operation, Register), K
                 Register::from_str(r)?,
             ))
         }
-        _ => Err(KakError::Custom(format!(
-            "Invalid arguments to set command"
-        ))),
+        _ => Err(KakError::Custom(
+            "Invalid arguments to set command".to_string(),
+        )),
     }?;
 
     if left_register == right_register {

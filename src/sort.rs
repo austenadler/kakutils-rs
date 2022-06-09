@@ -104,13 +104,13 @@ fn to_sortable_selection<'a, 'b>(
 ) -> SortableSelection<'a> {
     if options.no_skip_whitespace {
         SortableSelection {
-            selection: &selection,
+            selection,
             content_comparison: selection.content.as_str(),
             subselections: vec![],
         }
     } else {
         SortableSelection {
-            selection: &selection,
+            selection,
             content_comparison: selection.content.as_str().trim(),
             subselections: vec![],
         }

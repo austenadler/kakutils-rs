@@ -59,9 +59,7 @@ pub fn get_selections_with_desc() -> Result<Vec<SelectionWithDesc>, KakError> {
     }
 
     let min_selection = selections_desc.iter().min().ok_or_else(|| {
-        KakError::KakResponse(format!(
-            "Selections are empty, which should not be possible"
-        ))
+        KakError::KakResponse("Selections are empty, which should not be possible".to_string())
     })?;
 
     // Kakoune prints selections in file order, but prints selections_desc rotated based on current selection

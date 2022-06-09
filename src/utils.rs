@@ -5,7 +5,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-pub(crate) fn get_key(
+pub fn get_key(
     selection: &Selection,
     skip_whitespace: bool,
     regex: Option<&Regex>,
@@ -40,7 +40,7 @@ pub(crate) fn get_key(
 }
 
 /// Get a key out of a selection based on options
-pub(crate) fn get_hash(
+pub fn get_hash(
     selection: &Selection,
     skip_whitespace: bool,
     regex: Option<&Regex>,
