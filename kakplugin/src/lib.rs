@@ -212,3 +212,24 @@ pub fn get_var(var_name: &str) -> Result<String, KakError> {
         }
     })
 }
+
+/// Prints a list of shell script candidates for kakoune to ingest
+pub fn generate_shell_script_candidates<S>(variants: &[S]) -> Result<(), KakError>
+where
+    S: AsRef<str>,
+{
+    let token_to_complete = get_var("kak_token_to_complete")?.parse::<u8>()?;
+
+    match token_to_complete {
+        0 => {
+            for v in variants {
+                println!("{}", v.as_ref());
+            }
+        }
+        1_u8..=u8::MAX => {
+            // We can't see which command was selected, so none of these will do anything
+        }
+    }
+
+    Ok(())
+}

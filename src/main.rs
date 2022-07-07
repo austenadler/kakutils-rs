@@ -21,6 +21,8 @@ mod utils;
 // mod xargs;
 use clap::{Parser, Subcommand};
 use kakplugin::{display_message, get_var, KakError};
+use std::env;
+use strum::VariantNames;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -34,7 +36,8 @@ struct Cli {
     // kak_response_fifo_name: PathBuf,
 }
 
-#[derive(Subcommand, Debug)]
+#[derive(Subcommand, Debug, strum::EnumVariantNames)]
+#[strum(serialize_all = "kebab_case")]
 enum Commands {
     #[clap(about = "Sorts selections based on content or content regex match")]
     Sort(sort::Options),
@@ -57,6 +60,16 @@ enum Commands {
 }
 
 fn main() {
+    // First, check if we are just getting candidates to run the program. kak_command_fifo is not needed for this
+    let args = env::args().collect::<Vec<_>>();
+    if args.len() == 2 && args[1] == "shell-script-candidates" {
+        match kakplugin::generate_shell_script_candidates(Commands::VARIANTS) {
+            Err(e) => eprintln!("{e:?}"),
+            Ok(()) => {}
+        }
+        return;
+    }
+
     if get_var("kak_command_fifo")
         .and(get_var("kak_response_fifo"))
         .is_err()
