@@ -1,8 +1,8 @@
 // use crate::utils;
 use clap::ArgEnum;
 use kakplugin::{
-    get_selections, get_selections_with_desc, set_selections, set_selections_desc, types::Register,
-    KakError, Selection, SelectionWithDesc,
+    get_register_selections, get_selections, get_selections_with_desc, set_selections,
+    set_selections_desc, types::Register, KakError, Selection, SelectionWithDesc,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
@@ -66,38 +66,41 @@ impl FromStr for Operation {
 }
 
 pub fn set(options: &Options) -> Result<String, KakError> {
+    // Get the actual operation we are performing
     let (left_register, operation, right_register) = parse_arguments(&options.args[..])?;
 
+
+    // Get the selections for the left register and the right register, depending on the arguments
     // Underscore is a special case. We will treat it as the current selection
     let (left_selections, right_selections) = match (&left_register, &right_register) {
         (Register::Underscore, r) => {
             let l_selections = get_selections()?;
-            kakplugin::restore_register(r)?;
-            let r_selections = get_selections()?;
+            let r_selections = get_register_selections(r)?;
 
             (l_selections, r_selections)
         }
         (l, Register::Underscore) => {
             let r_selections = get_selections()?;
-            kakplugin::restore_register(l)?;
-            let l_selections = get_selections()?;
+            let l_selections = get_register_selections(l)?;
 
             (l_selections, r_selections)
         }
         (l, r) => {
-            kakplugin::restore_register(l)?;
-            let l_selections = get_selections()?;
+            let l_selections = get_register_selections(l)?;
+            let r_selections = get_register_selections(r)?;
 
-            kakplugin::restore_register(r)?;
-            let r_selections = get_selections()?;
             (l_selections, r_selections)
         }
     };
 
+// Get the frequency of each selection. The count does not matter as much as presence
+// Count is used only for compare
     let (left_ordered_counts, right_ordered_counts) = (
         to_ordered_counts(options, left_selections),
         to_ordered_counts(options, right_selections),
     );
+
+    // Get an ordered set of every key for each register
     let (left_keys, right_keys) = (
         left_ordered_counts
             .keys()
@@ -107,6 +110,7 @@ pub fn set(options: &Options) -> Result<String, KakError> {
             .collect::<LinkedHashSet<&Selection>>(),
     );
 
+// Run the actual set operation
     let result = key_set_operation(&operation, &left_keys, &right_keys);
 
     match &operation {
@@ -118,12 +122,16 @@ pub fn set(options: &Options) -> Result<String, KakError> {
             &right_ordered_counts,
         )?,
         Operation::Union => print_result(&result)?,
+        // Intersect/subtract will have at most the number of elements in the current selection
+        // If the user operated on the current selection, and we can modify the selection descs inplace, do it
         Operation::Intersect | Operation::Subtract => {
             if left_register == Register::Underscore {
                 // If the user asked for an intersection or subtraction from the current selection, we can update selection_descs only
+                // For example (current selection) - (contents of register a) allows us to simply deselect some selections
                 reduce_selections(&options, &result)?
             } else {
                 // The user asked for registers that *aren't* the current selection
+                // This means either registers don't represent the current selection, or the current selection is on the other side
                 print_result(&result)?
             }
         }
@@ -146,18 +154,17 @@ fn reduce_selections(
     options: &Options,
     key_set_operation_result: &LinkedHashSet<&Selection>,
 ) -> Result<(), KakError> {
-    kakplugin::restore_register(&Register::Caret)?;
+    // The registers should have been read in a draft context
+    // So the current selection will be unmodified
     let selections_with_desc = {
         let mut r = get_selections_with_desc()?;
         r.sort_by_key(|s| s.desc.sort());
         r
     };
 
-    eprintln!("Key set operation result: {:?}", key_set_operation_result);
-
     set_selections_desc(selections_with_desc.into_iter().filter_map(|swd| {
         // Does not matter if the operation was - or &
-        // Since key_set_operation_result contains elements that should be in the set,
+        // Since key_set_operation_result contains elements that should be in the resulting set,
         // we can just use contains here
         let key = crate::utils::get_key(
             &swd.content,
@@ -169,7 +176,6 @@ fn reduce_selections(
         if key_set_operation_result.contains(&key) {
             Some(swd.desc)
         } else {
-            eprintln!("Key {key} not found");
             None
         }
     }))?;
@@ -246,8 +252,6 @@ fn compare(
             },
             left_count,
             right_count,
-            // TODO: Do we want to escape the \n to \\n?
-            // kakplugin::escape(k.replace('\n', "\\n")),
             kakplugin::escape(k),
         )?;
     }

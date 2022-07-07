@@ -180,6 +180,23 @@ where
     cmd(&format!("execute-keys '\"{}z'", r.as_ref().kak_escaped()))
 }
 
+pub fn get_register_selections<R>(r: R) -> Result<Vec<Selection>, KakError>
+where
+    R: AsRef<Register>,
+{
+    cmd(&format!(
+        r#"
+        evaluate-commands -draft %{{
+            execute-keys '\"{}z';
+            echo -quoting shell -to-file {} -- %val{{selections}};
+        }}"#,
+        r.as_ref().kak_escaped(),
+        get_var("kak_response_fifo")?
+    ))?;
+    let selections = shellwords::split(&fs::read_to_string(&get_var("kak_response_fifo")?)?)?;
+    Ok(selections)
+}
+
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened or written to
