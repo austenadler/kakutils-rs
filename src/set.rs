@@ -118,7 +118,16 @@ pub fn set(options: &Options) -> Result<String, KakError> {
             &left_ordered_counts,
             &right_ordered_counts,
         )?,
-        Operation::Intersect | Operation::Subtract | Operation::Union => print_result(&result)?,
+        Operation::Union => print_result(&result)?,
+        Operation::Intersect | Operation::Subtract => {
+            if left_register == Register::Underscore {
+                // If the user asked for an intersection or subtraction from the current selection, we can update selection_descs only
+                reduce_selections(&options, &result)?
+            } else {
+                // The user asked for registers that *aren't* the current selection
+                print_result(&result)?
+            }
+        }
     }
 
     Ok(match &operation {
@@ -131,6 +140,36 @@ pub fn set(options: &Options) -> Result<String, KakError> {
             result.len()
         ),
     })
+}
+
+/// Reduces selections to those that are in the key_set_operation_result
+fn reduce_selections(
+    options: &Options,
+    key_set_operation_result: &LinkedHashSet<&Selection>,
+) -> Result<(), KakError> {
+    kakplugin::restore_register(&Register::Caret)?;
+    let selections_with_desc = {
+        let mut r = get_selections_with_desc()?;
+        r.sort_by_key(|s| s.desc.sort());
+        r
+    };
+
+    eprintln!("Key set operation result: {:?}", key_set_operation_result);
+
+    set_selections_desc(selections_with_desc.into_iter().filter_map(|swd| {
+        // Does not matter if the operation was - or &
+        // Since key_set_operation_result contains elements that should be in the set,
+        // we can just use contains here
+        let key = into_key(options, swd.content)?;
+        if key_set_operation_result.contains(&key) {
+            Some(swd.desc)
+        } else {
+            eprintln!("Key {key} not found");
+            None
+        }
+    }))?;
+
+    Ok(())
 }
 
 fn print_result(key_set_operation_result: &LinkedHashSet<&Selection>) -> Result<(), KakError> {
@@ -225,21 +264,32 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
     let mut ret = LinkedHashMap::new();
 
     for i in sels {
-        let key = if options.no_trim {
-            i
-        } else {
-            i.trim().to_string()
-        };
-
-        if key.is_empty() {
-            // We don't want to even pretend to look at empty keys
-            continue;
+        match into_key(options, i) {
+            Some(key) => {
+                let entry: &mut usize = ret.entry(key).or_insert(0);
+                *entry = entry.saturating_add(1);
+            }
+            None => {
+                // We don't want to even pretend to look at empty keys
+            }
         }
-
-        let entry: &mut usize = ret.entry(key).or_insert(0);
-        *entry = entry.saturating_add(1);
     }
     ret
+}
+
+fn into_key(options: &Options, sel: Selection) -> Option<Selection> {
+    let key = if options.no_trim {
+        sel
+    } else {
+        sel.trim().to_string()
+    };
+
+    if key.is_empty() {
+        // Never treat an empty string as a key
+        None
+    } else {
+        Some(key)
+    }
 }
 
 fn key_set_operation<'a>(

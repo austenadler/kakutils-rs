@@ -114,9 +114,10 @@ where
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn set_selections_desc<'a, I>(selections: I) -> Result<(), KakError>
+pub fn set_selections_desc<'a, I, SD: 'a + std::fmt::Display>(selections: I) -> Result<(), KakError>
 where
-    I: IntoIterator<Item = &'a SelectionDesc>,
+    I: IntoIterator<Item = SD>,
+    SD: AsRef<SelectionDesc>,
 {
     let mut selections_iter = selections.into_iter().peekable();
     if selections_iter.peek().is_none() {

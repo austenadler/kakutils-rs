@@ -49,6 +49,12 @@ impl SelectionDesc {
     }
 }
 
+impl AsRef<SelectionDesc> for SelectionDesc {
+    fn as_ref(&self) -> &Self {
+        &self
+    }
+}
+
 impl fmt::Display for SelectionDesc {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{},{}", self.left, self.right)
