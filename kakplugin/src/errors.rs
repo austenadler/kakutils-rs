@@ -16,6 +16,8 @@ pub enum KakError {
     NotImplemented(&'static str),
     /// Custom error string
     Custom(String),
+    /// The selections/selections_desc list passed was empty
+    SetEmptySelections,
 }
 
 impl KakError {
@@ -28,6 +30,9 @@ impl KakError {
             Self::Io(e) => format!("{e:?}"),
             Self::NotImplemented(e) => e.to_string(),
             Self::Custom(s) => s.clone(),
+            Self::SetEmptySelections => {
+                String::from("Attempted to set selections/selections_desc to empty list")
+            }
         }
     }
 }
@@ -44,6 +49,8 @@ impl ToString for KakError {
                 Self::Io(_) => "IO error",
                 Self::NotImplemented(_) => "Not Implemented",
                 Self::Custom(s) => s,
+                Self::SetEmptySelections =>
+                    "Attempted to set selections/selections_desc to empty list",
             }
         )
     }

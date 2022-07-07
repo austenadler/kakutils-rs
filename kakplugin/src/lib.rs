@@ -96,9 +96,14 @@ where
     I: IntoIterator<Item = &'a S>,
     S: AsRef<str>,
 {
+    let mut selections_iter = selections.into_iter().peekable();
+    if selections_iter.peek().is_none() {
+        return Err(KakError::SetEmptySelections);
+    }
+
     let mut f = open_command_fifo()?;
     write!(f, "set-register '\"'")?;
-    for i in selections {
+    for i in selections_iter {
         write!(f, " '{}'", escape(i))?;
     }
     write!(f, "; execute-keys R;")?;
@@ -113,9 +118,14 @@ pub fn set_selections_desc<'a, I>(selections: I) -> Result<(), KakError>
 where
     I: IntoIterator<Item = &'a SelectionDesc>,
 {
+    let mut selections_iter = selections.into_iter().peekable();
+    if selections_iter.peek().is_none() {
+        return Err(KakError::SetEmptySelections);
+    }
+
     let mut f = open_command_fifo()?;
     write!(f, "select")?;
-    for i in selections {
+    for i in selections_iter {
         write!(f, " {}", i)?;
     }
     write!(f, ";")?;
