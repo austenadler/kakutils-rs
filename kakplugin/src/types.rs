@@ -358,6 +358,12 @@ impl Register {
     }
 }
 
+impl AsRef<Register> for Register {
+    fn as_ref(&self) -> &Self {
+        &self
+    }
+}
+
 impl FromStr for Register {
     type Err = KakError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {

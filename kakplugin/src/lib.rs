@@ -163,24 +163,34 @@ pub fn escape<S: AsRef<str>>(s: S) -> String {
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened or written to
-pub fn cmd(cmd: &str) -> Result<(), KakError> {
+pub fn cmd<S>(cmd: S) -> Result<(), KakError>
+where
+    S: AsRef<str>,
+{
     let mut f = open_command_fifo()?;
 
-    write!(f, "{};", cmd)?;
+    write!(f, "{};", cmd.as_ref())?;
     f.flush().map_err(Into::into)
 }
 
-pub fn restore_register(r: &Register) -> Result<(), KakError> {
-    cmd(&format!("execute-keys '\"{}z'", r.kak_escaped()))
+pub fn restore_register<R>(r: R) -> Result<(), KakError>
+where
+    R: AsRef<Register>,
+{
+    cmd(&format!("execute-keys '\"{}z'", r.as_ref().kak_escaped()))
 }
 
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened or written to
-pub fn response(msg: &str) -> Result<Vec<String>, KakError> {
+pub fn response<S>(msg: S) -> Result<Vec<String>, KakError>
+where
+    S: AsRef<str>,
+{
     cmd(&format!(
-        "echo -quoting shell -to-file {} -- {msg}",
-        get_var("kak_response_fifo")?
+        "echo -quoting shell -to-file {} -- {}",
+        get_var("kak_response_fifo")?,
+        msg.as_ref()
     ))?;
 
     let selections = shellwords::split(&fs::read_to_string(&get_var("kak_response_fifo")?)?)?;
@@ -203,13 +213,16 @@ pub fn open_command_fifo() -> Result<BufWriter<File>, KakError> {
 /// # Errors
 ///
 /// Will return `Err` if requested environment variable is not unicode or not present
-pub fn get_var(var_name: &str) -> Result<String, KakError> {
-    env::var(var_name).map_err(|e| match e {
+pub fn get_var<S>(var_name: S) -> Result<String, KakError>
+where
+    S: AsRef<str>,
+{
+    env::var(var_name.as_ref()).map_err(|e| match e {
         env::VarError::NotPresent => {
-            KakError::EnvVarNotSet(format!("Env var {} is not defined", var_name))
+            KakError::EnvVarNotSet(format!("Env var {} is not defined", var_name.as_ref()))
         }
         env::VarError::NotUnicode(_) => {
-            KakError::EnvVarUnicode(format!("Env var {} is not unicode", var_name))
+            KakError::EnvVarUnicode(format!("Env var {} is not unicode", var_name.as_ref()))
         }
     })
 }
