@@ -18,15 +18,14 @@ pub struct Options {
     )]
     args: Vec<String>,
 
-    #[clap(
-        short = 'T',
-        help = "Do not trim the selections before doing set operations"
-    )]
-    no_trim: bool,
+    #[clap(short, long, help = "Trim each selection before doing set operations")]
+    skip_whitespace: bool,
     // #[clap(short, long)]
-    // regex: Option<Regex>,
+    #[clap(skip)]
+    regex: Option<Regex>,
     // #[clap(short, long)]
-    // ignore_case: bool,
+    #[clap(skip)]
+    ignore_case: bool,
     // #[clap(short = 'S', long)]
     // no_skip_whitespace: bool,
 }
@@ -160,7 +159,13 @@ fn reduce_selections(
         // Does not matter if the operation was - or &
         // Since key_set_operation_result contains elements that should be in the set,
         // we can just use contains here
-        let key = into_key(options, swd.content)?;
+        let key = crate::utils::get_key(
+            &swd.content,
+            options.skip_whitespace,
+            options.regex.as_ref(),
+            options.ignore_case,
+        );
+
         if key_set_operation_result.contains(&key) {
             Some(swd.desc)
         } else {
@@ -264,32 +269,22 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
     let mut ret = LinkedHashMap::new();
 
     for i in sels {
-        match into_key(options, i) {
-            Some(key) => {
-                let entry: &mut usize = ret.entry(key).or_insert(0);
-                *entry = entry.saturating_add(1);
-            }
-            None => {
-                // We don't want to even pretend to look at empty keys
-            }
+        let key = crate::utils::get_key(
+            &i,
+            options.skip_whitespace,
+            options.regex.as_ref(),
+            options.ignore_case,
+        );
+
+        if key.is_empty() {
+            // We don't want to even pretend to look at empty keys
+            continue;
+        } else {
+            let entry: &mut usize = ret.entry(key).or_insert(0);
+            *entry = entry.saturating_add(1);
         }
     }
     ret
-}
-
-fn into_key(options: &Options, sel: Selection) -> Option<Selection> {
-    let key = if options.no_trim {
-        sel
-    } else {
-        sel.trim().to_string()
-    };
-
-    if key.is_empty() {
-        // Never treat an empty string as a key
-        None
-    } else {
-        Some(key)
-    }
 }
 
 fn key_set_operation<'a>(
