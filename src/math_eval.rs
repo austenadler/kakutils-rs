@@ -2,6 +2,8 @@ use evalexpr::{eval, Value};
 use kakplugin::{get_selections, open_command_fifo, KakError};
 use std::io::Write;
 
+// TODO: Context for log() and others
+
 #[derive(clap::StructOpt, Debug)]
 pub struct Options;
 pub fn math_eval(_options: &Options) -> Result<String, KakError> {

@@ -20,13 +20,10 @@ pub fn xargs(options: &Options) -> Result<String, KakError> {
     let mut stdin = child.stdin.take().expect("Failed to open stdin");
     let handle = std::thread::spawn(move || -> Result<(), KakError> {
         for s in get_selections_with_desc()? {
-            eprintln!("Got selection {}", s.content);
             write!(stdin, "{}\0", s.content)?;
         }
         Ok(())
     });
-
-    eprintln!("About t oreadvv");
 
     set_selections(
         BufReader::new(

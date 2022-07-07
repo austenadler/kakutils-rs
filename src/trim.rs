@@ -39,7 +39,6 @@ pub fn trim(options: &Options) -> Result<String, KakError> {
         }
 
         if !options.no_preserve_newline && s.ends_with('\n') {
-            eprintln!("Adding newline: {s:?}");
             new_string.to_owned() + "\n"
         } else {
             new_string.to_owned()

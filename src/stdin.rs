@@ -19,7 +19,6 @@ pub fn stdin(options: &Options) -> Result<String, KakError> {
     let mut child_stdin = child.stdin.take().expect("Failed to open stdin");
     let handle = std::thread::spawn(move || -> Result<(), KakError> {
         for s in get_selections_with_desc()? {
-            eprintln!("Got selection {}", s.content);
             write!(child_stdin, "{}\0", s.content)?;
         }
         Ok(())

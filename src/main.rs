@@ -8,6 +8,7 @@
 // TODO: Remove
 #![allow(dead_code, unused_imports)]
 
+mod box_;
 mod errors;
 mod math_eval;
 mod set;
@@ -51,6 +52,8 @@ enum Commands {
     // Xargs(xargs::Options),
     #[clap(about = "Pass each selection null terminated to a command")]
     Stdin(stdin::Options),
+    #[clap(about = "Make boxes out of selections", visible_aliases = &["square"])]
+    Box_(box_::Options),
 }
 
 fn main() {
@@ -86,5 +89,6 @@ fn run() -> Result<String, KakError> {
         Commands::Set(o) => set::set(o),
         // Commands::Xargs(o) => xargs::xargs(o),
         Commands::Stdin(o) => stdin::stdin(o),
+        Commands::Box_(o) => box_::box_(o),
     }
 }
