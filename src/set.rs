@@ -69,7 +69,6 @@ pub fn set(options: &Options) -> Result<String, KakError> {
     // Get the actual operation we are performing
     let (left_register, operation, right_register) = parse_arguments(&options.args[..])?;
 
-
     // Get the selections for the left register and the right register, depending on the arguments
     // Underscore is a special case. We will treat it as the current selection
     let (left_selections, right_selections) = match (&left_register, &right_register) {
@@ -93,8 +92,8 @@ pub fn set(options: &Options) -> Result<String, KakError> {
         }
     };
 
-// Get the frequency of each selection. The count does not matter as much as presence
-// Count is used only for compare
+    // Get the frequency of each selection. The count does not matter as much as presence
+    // Count is used only for compare
     let (left_ordered_counts, right_ordered_counts) = (
         to_ordered_counts(options, left_selections),
         to_ordered_counts(options, right_selections),
@@ -110,7 +109,7 @@ pub fn set(options: &Options) -> Result<String, KakError> {
             .collect::<LinkedHashSet<&Selection>>(),
     );
 
-// Run the actual set operation
+    // Run the actual set operation
     let result = key_set_operation(&operation, &left_keys, &right_keys);
 
     match &operation {
