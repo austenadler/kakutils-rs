@@ -40,7 +40,10 @@ cargo install --git https://github.com/austenadler/kakutils-rs
 
 [source,title='kakrc']
 ----
-define-command utils -params .. %{
+define-command utils -params .. -shell-script-candidates %{
+    # use kak_token_to_complete;
+    kakutils-rs shell-script-candidates
+} %{
     eval -save-regs '"' %{
         eval %sh{
             # use kak_command_fifo kak_response_fifo;
