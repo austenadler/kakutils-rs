@@ -58,11 +58,13 @@ impl SelectionDesc {
             left: self.left,
             right: self.left,
         });
+
         // My right is contained in b
         let right_contained = b.contains(&SelectionDesc {
             left: self.right,
             right: self.right,
         });
+
         // b is contaned in self
         let b_contained = self.contains(b);
 
@@ -527,7 +529,7 @@ mod test {
     // Selection desc creator
     macro_rules! sd {
         ($b:expr, $d:expr) => {{
-            sd!(1,$b,1,$d)
+            sd!(1, $b, 1, $d)
         }};
         ($a:expr, $b:expr,$c:expr,$d:expr) => {{
             SelectionDesc {
@@ -543,40 +545,37 @@ mod test {
     #[test]
     fn test_anchor_position() {
         // Check parsing
-        assert_eq!(sd!(18,9,10,1), SD);
+        assert_eq!(sd!(18, 9, 10, 1), SD);
         // Check if multiple parsed ones match
-        assert_eq!(
-            sd!(18,9,10,1),
-            sd!(18,9,10,1)
-        );
+        assert_eq!(sd!(18, 9, 10, 1), sd!(18, 9, 10, 1));
     }
 
     #[test]
     fn test_sort() {
         // Check if sorting works
-        assert_eq!(SD.sort(), sd!(10,1,18,9));
+        assert_eq!(SD.sort(), sd!(10, 1, 18, 9));
         assert_eq!(SD.sort(), SD.sort().sort());
     }
 
     #[test]
     fn test_contains() {
         assert!(SD.contains(&SD));
-        assert!(SD.contains(&sd!(17,9,10,1)));
-        assert!(SD.contains(&sd!(18,8,10,1)));
-        assert!(SD.contains(&sd!(18,9,11,1)));
-        assert!(SD.contains(&sd!(18,9,10,2)));
-        assert!(SD.contains(&sd!(10,1,17,9)));
-        assert!(SD.contains(&sd!(10,1,18,8)));
-        assert!(SD.contains(&sd!(11,1,18,9)));
-        assert!(SD.contains(&sd!(10,2,18,9)));
-        assert!(!SD.contains(&sd!(19,9,10,1)));
-        assert!(!SD.contains(&sd!(18,10,10,1)));
-        assert!(!SD.contains(&sd!(18,9,9,1)));
-        assert!(!SD.contains(&sd!(18,9,10,0)));
-        assert!(!SD.contains(&sd!(10,1,19,9)));
-        assert!(!SD.contains(&sd!(10,1,18,10)));
-        assert!(!SD.contains(&sd!(9,1,18,9)));
-        assert!(!SD.contains(&sd!(10,0,18,9)));
+        assert!(SD.contains(&sd!(17, 9, 10, 1)));
+        assert!(SD.contains(&sd!(18, 8, 10, 1)));
+        assert!(SD.contains(&sd!(18, 9, 11, 1)));
+        assert!(SD.contains(&sd!(18, 9, 10, 2)));
+        assert!(SD.contains(&sd!(10, 1, 17, 9)));
+        assert!(SD.contains(&sd!(10, 1, 18, 8)));
+        assert!(SD.contains(&sd!(11, 1, 18, 9)));
+        assert!(SD.contains(&sd!(10, 2, 18, 9)));
+        assert!(!SD.contains(&sd!(19, 9, 10, 1)));
+        assert!(!SD.contains(&sd!(18, 10, 10, 1)));
+        assert!(!SD.contains(&sd!(18, 9, 9, 1)));
+        assert!(!SD.contains(&sd!(18, 9, 10, 0)));
+        assert!(!SD.contains(&sd!(10, 1, 19, 9)));
+        assert!(!SD.contains(&sd!(10, 1, 18, 10)));
+        assert!(!SD.contains(&sd!(9, 1, 18, 9)));
+        assert!(!SD.contains(&sd!(10, 0, 18, 9)));
     }
 
     #[test]
