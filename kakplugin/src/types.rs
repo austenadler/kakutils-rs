@@ -15,7 +15,7 @@ pub struct SelectionWithSubselections {
     pub subselections: Vec<SelectionWithDesc>,
 }
 
-#[derive(PartialEq, PartialOrd, Ord, Eq, Debug)]
+#[derive(Clone, PartialEq, PartialOrd, Ord, Eq, Debug)]
 pub struct SelectionDesc {
     pub left: AnchorPosition,
     pub right: AnchorPosition,
@@ -47,6 +47,76 @@ impl SelectionDesc {
 
         sorted_b.left >= sorted_a.left && sorted_b.right <= sorted_a.right
     }
+
+    #[must_use]
+    pub fn subtract(&self, b: &Self) -> Vec<Self> {
+        // let sorted_self = self.sort();
+        // let sorted_b = b.sort();
+
+        // My left is contained in b
+        let left_contained = b.contains(&SelectionDesc {
+            left: self.left,
+            right: self.left,
+        });
+        // My right is contained in b
+        let right_contained = b.contains(&SelectionDesc {
+            left: self.right,
+            right: self.right,
+        });
+        // b is contaned in self
+        let b_contained = self.contains(b);
+
+        match (left_contained, right_contained, b_contained) {
+            (true, true, _) => {
+                // self is contained by b
+                vec![]
+            }
+            (false, false, false) => {
+                // There is no intersection
+                // TODO: Why can't I clone myself?
+                vec![self.clone()]
+            }
+            (false, false, true) => {
+                // B is contained and it does not intersect with left or right
+                vec![
+                    Self {
+                        left: self.left,
+                        right: AnchorPosition {
+                            row: b.left.row,
+                            col: b.left.col.saturating_sub(1),
+                        },
+                    },
+                    Self {
+                        left: AnchorPosition {
+                            row: b.right.row,
+                            col: b.right.col.saturating_add(1),
+                        },
+                        right: self.right,
+                    },
+                ]
+            }
+            (true, false, _) => {
+                // Only self's left is contained
+                vec![Self {
+                    left: AnchorPosition {
+                        row: b.right.row,
+                        col: b.right.col.saturating_add(1),
+                    },
+                    right: self.right,
+                }]
+            }
+            (false, true, _) => {
+                // Only self's right is contained
+                vec![Self {
+                    left: self.left,
+                    right: AnchorPosition {
+                        row: b.left.row,
+                        col: b.left.col.saturating_sub(1),
+                    },
+                }]
+            }
+        }
+    }
 }
 
 impl AsRef<SelectionDesc> for SelectionDesc {
@@ -75,7 +145,7 @@ impl FromStr for SelectionDesc {
     }
 }
 
-#[derive(PartialOrd, PartialEq, Clone, Eq, Ord, Debug)]
+#[derive(PartialOrd, PartialEq, Copy, Clone, Eq, Ord, Debug)]
 pub struct AnchorPosition {
     pub row: usize,
     pub col: usize,
@@ -454,6 +524,18 @@ impl FromStr for Register {
 #[cfg(test)]
 mod test {
     use super::*;
+    // Selection desc creator
+    macro_rules! sd {
+        ($b:expr, $d:expr) => {{
+            sd!(1,$b,1,$d)
+        }};
+        ($a:expr, $b:expr,$c:expr,$d:expr) => {{
+            SelectionDesc {
+                left: AnchorPosition { row: $a, col: $b },
+                right: AnchorPosition { row: $c, col: $d },
+            }
+        }};
+    }
     const SD: SelectionDesc = SelectionDesc {
         left: AnchorPosition { row: 18, col: 9 },
         right: AnchorPosition { row: 10, col: 1 },
@@ -461,39 +543,104 @@ mod test {
     #[test]
     fn test_anchor_position() {
         // Check parsing
-        assert_eq!(SelectionDesc::from_str("18.9,10.1").unwrap(), SD);
+        assert_eq!(sd!(18,9,10,1), SD);
         // Check if multiple parsed ones match
         assert_eq!(
-            SelectionDesc::from_str("18.9,10.1").unwrap(),
-            SelectionDesc::from_str("18.9,10.1").unwrap()
+            sd!(18,9,10,1),
+            sd!(18,9,10,1)
         );
     }
 
     #[test]
     fn test_sort() {
         // Check if sorting works
-        assert_eq!(SD.sort(), SelectionDesc::from_str("10.1,18.9").unwrap());
+        assert_eq!(SD.sort(), sd!(10,1,18,9));
         assert_eq!(SD.sort(), SD.sort().sort());
     }
 
     #[test]
     fn test_contains() {
         assert!(SD.contains(&SD));
-        assert!(SD.contains(&SelectionDesc::from_str("17.9,10.1").unwrap()));
-        assert!(SD.contains(&SelectionDesc::from_str("18.8,10.1").unwrap()));
-        assert!(SD.contains(&SelectionDesc::from_str("18.9,11.1").unwrap()));
-        assert!(SD.contains(&SelectionDesc::from_str("18.9,10.2").unwrap()));
-        assert!(SD.contains(&SelectionDesc::from_str("10.1,17.9").unwrap()));
-        assert!(SD.contains(&SelectionDesc::from_str("10.1,18.8").unwrap()));
-        assert!(SD.contains(&SelectionDesc::from_str("11.1,18.9").unwrap()));
-        assert!(SD.contains(&SelectionDesc::from_str("10.2,18.9").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("19.9,10.1").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("18.10,10.1").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("18.9,9.1").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("18.9,10.0").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("10.1,19.9").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("10.1,18.10").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("9.1,18.9").unwrap()));
-        assert!(!SD.contains(&SelectionDesc::from_str("10.0,18.9").unwrap()));
+        assert!(SD.contains(&sd!(17,9,10,1)));
+        assert!(SD.contains(&sd!(18,8,10,1)));
+        assert!(SD.contains(&sd!(18,9,11,1)));
+        assert!(SD.contains(&sd!(18,9,10,2)));
+        assert!(SD.contains(&sd!(10,1,17,9)));
+        assert!(SD.contains(&sd!(10,1,18,8)));
+        assert!(SD.contains(&sd!(11,1,18,9)));
+        assert!(SD.contains(&sd!(10,2,18,9)));
+        assert!(!SD.contains(&sd!(19,9,10,1)));
+        assert!(!SD.contains(&sd!(18,10,10,1)));
+        assert!(!SD.contains(&sd!(18,9,9,1)));
+        assert!(!SD.contains(&sd!(18,9,10,0)));
+        assert!(!SD.contains(&sd!(10,1,19,9)));
+        assert!(!SD.contains(&sd!(10,1,18,10)));
+        assert!(!SD.contains(&sd!(9,1,18,9)));
+        assert!(!SD.contains(&sd!(10,0,18,9)));
+    }
+
+    #[test]
+    fn test_subtract() {
+        // Testing a-b
+
+        //    01234567
+        // a:  ^_^
+        // b: ^____^
+        assert_eq!(sd!(1, 3).subtract(&sd!(0, 5)), vec![]);
+
+        //    01234567
+        // a: ^__^
+        // b: ^____^
+        assert_eq!(sd!(0, 3).subtract(&sd!(0, 5)), vec![]);
+
+        //    01234567
+        // a:  ^___^
+        // b:  ^___^
+        assert_eq!(sd!(1, 5).subtract(&sd!(1, 5)), vec![]);
+
+        //    01234567
+        // a: ^_____^
+        // b: ^____^
+        assert_eq!(sd!(0, 6).subtract(&sd!(0, 5)), vec![sd!(6, 6)]);
+
+        //    01234567
+        // a:  ^____^
+        // b: ^____^
+        assert_eq!(sd!(1, 6).subtract(&sd!(0, 5)), vec![sd!(6, 6)]);
+
+        //    01234567
+        // a: ^____^
+        // b:  ^____^
+        assert_eq!(sd!(0, 5).subtract(&sd!(1, 6)), vec![sd!(0, 0)]);
+
+        //    01234567
+        // a: ^______^
+        // b:  ^____^
+        assert_eq!(sd!(0, 7).subtract(&sd!(1, 6)), vec![sd!(0, 0), sd!(7, 7)]);
+
+        //    01234567
+        // a:    ^
+        // b: ^____^
+        assert_eq!(sd!(3, 3).subtract(&sd!(0, 5)), vec![]);
+
+        //    01234567
+        // a: ^
+        // b: ^____^
+        assert_eq!(sd!(0, 0).subtract(&sd!(0, 5)), vec![]);
+
+        //    01234567
+        // a: ^
+        // b:  ^____^
+        assert_eq!(sd!(0, 0).subtract(&sd!(1, 6)), vec![sd!(0, 0)]);
+
+        //    01234567
+        // a:      ^
+        // b: ^____^
+        assert_eq!(sd!(5, 5).subtract(&sd!(0, 5)), vec![]);
+
+        //    01234567
+        // a:       ^
+        // b: ^____^
+        assert_eq!(sd!(6, 6).subtract(&sd!(0, 5)), vec![sd!(6, 6)]);
     }
 }

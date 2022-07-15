@@ -5,11 +5,11 @@ use std::cmp::{max, min};
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
     // /// Bounding box mode, which selects the largest box to contain everything
-    // #[clap(short, long, help = "Select the bonding box of all selections")]
-    // bounding_box: bool,
-    // /// Allow selecting trailing newlines
-    // #[clap(short, long, help = "Allow selecting trailing newlines")]
-    // preserve_newlines: bool,
+// #[clap(short, long, help = "Select the bonding box of all selections")]
+// bounding_box: bool,
+// /// Allow selecting trailing newlines
+// #[clap(short, long, help = "Allow selecting trailing newlines")]
+// preserve_newlines: bool,
 }
 
 pub fn box_(options: &Options) -> Result<String, KakError> {

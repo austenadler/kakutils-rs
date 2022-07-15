@@ -91,9 +91,9 @@ pub fn get_selections_with_desc() -> Result<Vec<SelectionWithDesc>, KakError> {
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn set_selections<'a, I, S: 'a + ?Sized>(selections: I) -> Result<(), KakError>
+pub fn set_selections<'a, I, S: 'a>(selections: I) -> Result<(), KakError>
 where
-    I: IntoIterator<Item = &'a S>,
+    I: IntoIterator<Item = S>,
     S: AsRef<str>,
 {
     let mut selections_iter = selections.into_iter().peekable();
