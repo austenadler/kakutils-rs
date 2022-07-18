@@ -4,6 +4,13 @@ use std::{fmt, str::FromStr};
 pub type Selection = String;
 
 #[derive(PartialEq, Eq, Debug)]
+pub enum MaybeSplit<T> {
+    Nothing,
+    Just(T),
+    JustTwo(T, T),
+}
+
+#[derive(PartialEq, Eq, Debug)]
 pub struct SelectionWithDesc {
     pub content: Selection,
     pub desc: SelectionDesc,
@@ -49,7 +56,7 @@ impl SelectionDesc {
     }
 
     #[must_use]
-    pub fn subtract(&self, b: &Self) -> Vec<Self> {
+    pub fn subtract(&self, b: &Self) -> MaybeSplit<Self> {
         // let sorted_self = self.sort();
         // let sorted_b = b.sort();
 
@@ -71,16 +78,16 @@ impl SelectionDesc {
         match (left_contained, right_contained, b_contained) {
             (true, true, _) => {
                 // self is contained by b
-                vec![]
+                MaybeSplit::Nothing
             }
             (false, false, false) => {
                 // There is no intersection
                 // TODO: Why can't I clone myself?
-                vec![self.clone()]
+                MaybeSplit::Just(self.clone())
             }
             (false, false, true) => {
                 // B is contained and it does not intersect with left or right
-                vec![
+                MaybeSplit::JustTwo(
                     Self {
                         left: self.left,
                         right: AnchorPosition {
@@ -95,27 +102,27 @@ impl SelectionDesc {
                         },
                         right: self.right,
                     },
-                ]
+                )
             }
             (true, false, _) => {
                 // Only self's left is contained
-                vec![Self {
+                MaybeSplit::Just(Self {
                     left: AnchorPosition {
                         row: b.right.row,
                         col: b.right.col.saturating_add(1),
                     },
                     right: self.right,
-                }]
+                })
             }
             (false, true, _) => {
                 // Only self's right is contained
-                vec![Self {
+                MaybeSplit::Just(Self {
                     left: self.left,
                     right: AnchorPosition {
                         row: b.left.row,
                         col: b.left.col.saturating_sub(1),
                     },
-                }]
+                })
             }
         }
     }
@@ -585,61 +592,64 @@ mod test {
         //    01234567
         // a:  ^_^
         // b: ^____^
-        assert_eq!(sd!(1, 3).subtract(&sd!(0, 5)), vec![]);
+        assert_eq!(sd!(1, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^__^
         // b: ^____^
-        assert_eq!(sd!(0, 3).subtract(&sd!(0, 5)), vec![]);
+        assert_eq!(sd!(0, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a:  ^___^
         // b:  ^___^
-        assert_eq!(sd!(1, 5).subtract(&sd!(1, 5)), vec![]);
+        assert_eq!(sd!(1, 5).subtract(&sd!(1, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^_____^
         // b: ^____^
-        assert_eq!(sd!(0, 6).subtract(&sd!(0, 5)), vec![sd!(6, 6)]);
+        assert_eq!(sd!(0, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
 
         //    01234567
         // a:  ^____^
         // b: ^____^
-        assert_eq!(sd!(1, 6).subtract(&sd!(0, 5)), vec![sd!(6, 6)]);
+        assert_eq!(sd!(1, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
 
         //    01234567
         // a: ^____^
         // b:  ^____^
-        assert_eq!(sd!(0, 5).subtract(&sd!(1, 6)), vec![sd!(0, 0)]);
+        assert_eq!(sd!(0, 5).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
 
         //    01234567
         // a: ^______^
         // b:  ^____^
-        assert_eq!(sd!(0, 7).subtract(&sd!(1, 6)), vec![sd!(0, 0), sd!(7, 7)]);
+        assert_eq!(
+            sd!(0, 7).subtract(&sd!(1, 6)),
+            MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7))
+        );
 
         //    01234567
         // a:    ^
         // b: ^____^
-        assert_eq!(sd!(3, 3).subtract(&sd!(0, 5)), vec![]);
+        assert_eq!(sd!(3, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^
         // b: ^____^
-        assert_eq!(sd!(0, 0).subtract(&sd!(0, 5)), vec![]);
+        assert_eq!(sd!(0, 0).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^
         // b:  ^____^
-        assert_eq!(sd!(0, 0).subtract(&sd!(1, 6)), vec![sd!(0, 0)]);
+        assert_eq!(sd!(0, 0).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
 
         //    01234567
         // a:      ^
         // b: ^____^
-        assert_eq!(sd!(5, 5).subtract(&sd!(0, 5)), vec![]);
+        assert_eq!(sd!(5, 5).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a:       ^
         // b: ^____^
-        assert_eq!(sd!(6, 6).subtract(&sd!(0, 5)), vec![sd!(6, 6)]);
+        assert_eq!(sd!(6, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
     }
 }
