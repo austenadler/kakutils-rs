@@ -17,7 +17,7 @@ pub struct Options {
     no_skip_whitespace: bool,
 }
 pub fn uniq(options: &Options) -> Result<String, KakError> {
-    let mut selections = get_selections_with_desc()?;
+    let mut selections = get_selections_with_desc(None)?;
     // Sort selections so the first element is the unique one, not an arbitrary one based on primary selection
     selections.sort_by_key(|s| s.desc.sort());
 
@@ -51,7 +51,7 @@ pub fn uniq(options: &Options) -> Result<String, KakError> {
     }))?;
 
     // Deselect all `None` strings (all rows that have been seen before)
-    let mut new_selections_desc = get_selections_desc()?;
+    let mut new_selections_desc = get_selections_desc(None)?;
     new_selections_desc.sort();
     set_selections_desc(
         // Refresh seelections_desc because positions have changed

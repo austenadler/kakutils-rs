@@ -1,4 +1,5 @@
 use crate::KakError;
+use core::fmt::{Display, Formatter};
 use std::{fmt, str::FromStr};
 
 pub type Selection = String;
@@ -134,7 +135,7 @@ impl AsRef<SelectionDesc> for SelectionDesc {
     }
 }
 
-impl fmt::Display for SelectionDesc {
+impl Display for SelectionDesc {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{},{}", self.left, self.right)
     }
@@ -159,7 +160,7 @@ pub struct AnchorPosition {
     pub row: usize,
     pub col: usize,
 }
-impl fmt::Display for AnchorPosition {
+impl Display for AnchorPosition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}.{}", self.row, self.col)
     }
@@ -255,6 +256,12 @@ pub enum Register {
     Hash,
     Underscore,
     Colon,
+}
+
+impl Display for Register {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", self.kak_escaped())
+    }
 }
 
 impl Register {

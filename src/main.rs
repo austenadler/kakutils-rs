@@ -7,10 +7,11 @@
 #![allow(clippy::struct_excessive_bools)]
 // TODO: Remove
 #![allow(dead_code, unused_imports)]
+#![feature(slice_group_by)]
 
 mod box_;
 mod errors;
-// mod invert;
+mod invert;
 mod math_eval;
 mod set;
 mod shuf;

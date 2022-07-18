@@ -1,8 +1,8 @@
 // use crate::utils;
 use clap::ArgEnum;
 use kakplugin::{
-    get_register_selections, get_selections, get_selections_with_desc, set_selections,
-    set_selections_desc, types::Register, KakError, Selection, SelectionWithDesc,
+    get_selections, get_selections_with_desc, set_selections, set_selections_desc, types::Register,
+    KakError, Selection, SelectionWithDesc,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
@@ -73,20 +73,20 @@ pub fn set(options: &Options) -> Result<String, KakError> {
     // Underscore is a special case. We will treat it as the current selection
     let (left_selections, right_selections) = match (&left_register, &right_register) {
         (Register::Underscore, r) => {
-            let l_selections = get_selections()?;
-            let r_selections = get_register_selections(r)?;
+            let l_selections = get_selections(None)?;
+            let r_selections = get_selections(Some(&format!("\"{r}z")))?;
 
             (l_selections, r_selections)
         }
         (l, Register::Underscore) => {
-            let r_selections = get_selections()?;
-            let l_selections = get_register_selections(l)?;
+            let r_selections = get_selections(None)?;
+            let l_selections = get_selections(Some(&format!("\"{l}z")))?;
 
             (l_selections, r_selections)
         }
         (l, r) => {
-            let l_selections = get_register_selections(l)?;
-            let r_selections = get_register_selections(r)?;
+            let l_selections = get_selections(Some(&format!("\"{l}z")))?;
+            let r_selections = get_selections(Some(&format!("\"{r}z")))?;
 
             (l_selections, r_selections)
         }
@@ -156,7 +156,7 @@ fn reduce_selections(
     // The registers should have been read in a draft context
     // So the current selection will be unmodified
     let selections_with_desc = {
-        let mut r = get_selections_with_desc()?;
+        let mut r = get_selections_with_desc(None)?;
         r.sort_by_key(|s| s.desc.sort());
         r
     };

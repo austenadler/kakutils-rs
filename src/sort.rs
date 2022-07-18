@@ -127,12 +127,12 @@ pub fn sort(options: &Options) -> Result<String, KakError> {
     let subselections: Option<Vec<SelectionWithDesc>> = options
         .subselections_register
         .map::<Result<_, KakError>, _>(|c| {
-            let subselections = get_selections_with_desc()?;
+            let subselections = get_selections_with_desc(None)?;
             kakplugin::cmd(&format!("exec {}", c))?;
             Ok(subselections)
         })
         .transpose()?;
-    let selections = get_selections_with_desc()?;
+    let selections = get_selections_with_desc(None)?;
 
     let mut zipped: Vec<SortableSelection<'_>> = match (&options.regex, &subselections) {
         (Some(_), Some(_)) => {

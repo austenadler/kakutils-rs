@@ -5,11 +5,11 @@ use std::cmp::{max, min};
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
     // /// Bounding box mode, which selects the largest box to contain everything
-// #[clap(short, long, help = "Select the bonding box of all selections")]
-// bounding_box: bool,
-// /// Allow selecting trailing newlines
-// #[clap(short, long, help = "Allow selecting trailing newlines")]
-// preserve_newlines: bool,
+    // #[clap(short, long, help = "Select the bonding box of all selections")]
+    // bounding_box: bool,
+    // /// Allow selecting trailing newlines
+    // #[clap(short, long, help = "Allow selecting trailing newlines")]
+    // preserve_newlines: bool,
 }
 
 pub fn box_(options: &Options) -> Result<String, KakError> {
@@ -30,7 +30,7 @@ pub fn box_(options: &Options) -> Result<String, KakError> {
 }
 
 fn bounding_box(_options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
-    let selection_descs: Vec<SelectionDesc> = get_selections_desc()?
+    let selection_descs: Vec<SelectionDesc> = get_selections_desc(None)?
         .iter()
         // TODO: Do they need to be sorted?
         .map(|sd| sd.sort())
@@ -63,8 +63,10 @@ fn bounding_box(_options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
 
     let mut ret_selection_descs: Vec<SelectionDesc> = vec![];
 
-    let split_selection_descs: Vec<SelectionDesc> =
-        get_selections_desc()?.iter().map(|sd| sd.sort()).collect();
+    let split_selection_descs: Vec<SelectionDesc> = get_selections_desc(None)?
+        .iter()
+        .map(|sd| sd.sort())
+        .collect();
 
     for sd in &split_selection_descs {
         if sd.left.col > rightmost_col || sd.right.col < leftmost_col {

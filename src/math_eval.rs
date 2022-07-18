@@ -7,7 +7,7 @@ pub struct Options;
 pub fn math_eval(_options: &Options) -> Result<String, KakError> {
     let mut err_count: usize = 0;
 
-    let selections = get_selections()?;
+    let selections = get_selections(None)?;
 
     set_selections(selections.iter().map(|s| match eval(s) {
         Ok(Value::Float(f)) => f.to_string(),

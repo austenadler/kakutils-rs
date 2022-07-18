@@ -3,7 +3,7 @@ use rand::{seq::SliceRandom, thread_rng};
 #[derive(clap::StructOpt, Debug)]
 pub struct Options;
 pub fn shuf(_options: &Options) -> Result<String, KakError> {
-    let mut selections = get_selections()?;
+    let mut selections = get_selections(None)?;
     let mut rng = thread_rng();
 
     selections.shuffle(&mut rng);

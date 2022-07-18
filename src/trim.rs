@@ -16,7 +16,7 @@ pub struct Options {
 }
 
 pub fn trim(options: &Options) -> Result<String, KakError> {
-    let selections = get_selections()?;
+    let selections = get_selections(None)?;
 
     let mut f = open_command_fifo()?;
     write!(f, "reg '\"'")?;
