@@ -111,15 +111,33 @@ impl SelectionDesc {
         // Set a and b to the leftmost and rightmost selection
         let (a, b) = (min(self, other).sort(), max(self, other).sort());
 
-        if a.contains(&b.left)
-            || a.contains(&b.right)
-            || b.contains(&a.left)
-            || b.contains(&a.right)
-        {
-            // Some(Self {})
-            None
-        } else {
-            None
+        match (b.contains(&a.left), b.contains(&a.right), a.contains(&b)) {
+            (false, false, false) => {
+                // There is no intersection
+                None
+            }
+            (true, true, _) => {
+                // a is contained by b
+                Some(a)
+            }
+            (false, false, true) => {
+                // b is contained and it does not intersect with left or right
+                Some(b)
+            }
+            (true, false, _) => {
+                // Only a's left is contained
+                Some(Self {
+                    left: a.left,
+                    right: b.right,
+                })
+            }
+            (false, true, _) => {
+                // Only a's right is contained
+                Some(Self {
+                    left: b.left,
+                    right: a.right,
+                })
+            }
         }
     }
 
@@ -127,36 +145,42 @@ impl SelectionDesc {
     pub fn partial_union(&self, other: &Self) -> Option<Self> {
         // Set a and b to the leftmost and rightmost selection
         let (a, b) = (min(self, other).sort(), max(self, other).sort());
-        eprintln!("Partial union args: a: {a:#?}, b: {b:#?}");
 
-        eprintln!(
-            "Checking if {} contains {}: {}",
-            a,
-            b.left,
-            a.contains(&b.left)
-        );
-        eprintln!(
-            "Checking if {} contains {}: {}",
-            b,
-            a.right,
-            b.contains(&a.right)
-        );
-
-        // Either the left side of b is contained b a, or
-        // This will not work when the right side of a is the end of line and the left side of b is beginning of line
-        // This is because selection descs do not know when a selection desc is at the end of a line
-        if a.contains(&b.left) || b.contains(&a.right)
-        // If b's left is one col off from a's right
-        // || (a.right.row == b_left.row && a.right.col == b.left.col.saturating_sub(1))
-        // Or b's right is
-        // || (a.left.row == b_left.row && a.left.col == b.right.col.saturating_sub(1))
-        {
-            Some(SelectionDesc {
-                left: min(a.left, b.left),
-                right: max(a.right, b.right),
-            })
-        } else {
-            None
+        match (b.contains(&a.left), b.contains(&a.right), a.contains(&b)) {
+            (false, false, false) => {
+                // There is no intersection
+                // TODO: Do the weird boundary ones
+                // None
+                if a.right.row == b.left.row && a.right.col == b.left.col.saturating_sub(1) {
+                    Some(Self {
+                        left: a.left,right: b.right
+                    })
+                } else {
+                    None
+                }
+            }
+            (true, true, _) => {
+                // a is contained by b
+                Some(b)
+            }
+            (false, false, true) => {
+                // b is contained and it does not intersect with left or right
+                Some(a)
+            }
+            (true, false, _) => {
+                // Only a's left is contained
+                Some(Self {
+                    left: b.left,
+                    right: a.right,
+                })
+            }
+            (false, true, _) => {
+                // Only a's right is contained
+                Some(Self {
+                    left: a.left,
+                    right: b.right,
+                })
+            }
         }
     }
 
@@ -170,16 +194,16 @@ impl SelectionDesc {
             sorted_b.contains(&sorted_self.right),
             sorted_self.contains(&sorted_b),
         ) {
-            (true, true, _) => {
-                // sorted_self is contained by sorted_b
-                MaybeSplit::Nothing
-            }
             (false, false, false) => {
                 // There is no intersection
                 MaybeSplit::Just(sorted_self)
             }
+            (true, true, _) => {
+                // sorted_self is contained by sorted_b
+                MaybeSplit::Nothing
+            }
             (false, false, true) => {
-                // B is contained and it does not intersect with left or right
+                // sorted_b is contained and it does not intersect with left or right
                 MaybeSplit::JustTwo(
                     Self {
                         left: sorted_self.left,
@@ -745,6 +769,81 @@ mod test {
         assert!(!SD.contains(&sdr!(10, 1, 18, 10)));
         assert!(!SD.contains(&sdr!(9, 1, 18, 9)));
         assert!(!SD.contains(&sdr!(10, 0, 18, 9)));
+    }
+
+    #[test]
+    fn test_intersect() {
+        // Testing a+b
+
+        //    01234567
+        // a:  ^_^
+        // b: ^____^
+        mixed_test!((1, 3), intersect, (0, 5), Some(sd!(1, 3)));
+
+        //    01234567
+        // a: ^__^
+        // b: ^____^
+        mixed_test!((0, 3), intersect, (0, 5), Some(sd!(0, 3)));
+
+        //    01234567
+        // a:  ^___^
+        // b:  ^___^
+        mixed_test!((1, 5), intersect, (1, 5), Some(sd!(1, 5)));
+
+        //    01234567
+        // a: ^_____^
+        // b: ^____^
+        mixed_test!((0, 6), intersect, (0, 5), Some(sd!(0, 5)));
+
+        //    01234567
+        // a:  ^____^
+        // b: ^____^
+        mixed_test!((1, 6), intersect, (0, 5), Some(sd!(1, 5)));
+
+        //    01234567
+        // a: ^____^
+        // b:  ^____^
+        mixed_test!((0, 5), intersect, (1, 6), Some(sd!(1, 5)));
+
+        //    01234567
+        // a: ^______^
+        // b:  ^____^
+        mixed_test!((0, 7), intersect, (1, 6), Some(sd!(1, 6)));
+
+        //    01234567
+        // a:    ^
+        // b: ^____^
+        mixed_test!((3, 3), intersect, (0, 5), Some(sd!(3, 3)));
+
+        //    01234567
+        // a: ^
+        // b: ^____^
+        mixed_test!((0, 0), intersect, (0, 5), Some(sd!(0, 0)));
+
+        //    01234567
+        // a: ^
+        // b:  ^____^
+        mixed_test!((0, 0), intersect, (1, 6), None);
+
+        //    01234567
+        // a:      ^
+        // b: ^____^
+        mixed_test!((5, 5), intersect, (0, 5), Some(sd!(5, 5)));
+
+        //    01234567
+        // a:       ^
+        // b: ^____^
+        mixed_test!((6, 6), intersect, (0, 5), None);
+
+        //    01234567
+        // a:        ^
+        // b: ^____^
+        mixed_test!((7, 7), intersect, (0, 5), None);
+
+        //    01234567
+        // a: ^
+        // b:   ^____^
+        mixed_test!((0, 0), intersect, (2, 7), None);
     }
 
     #[test]
