@@ -5,11 +5,11 @@ use std::cmp::{max, min};
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
     // /// Bounding box mode, which selects the largest box to contain everything
-    // #[clap(short, long, help = "Select the bonding box of all selections")]
-    // bounding_box: bool,
-    // /// Allow selecting trailing newlines
-    // #[clap(short, long, help = "Allow selecting trailing newlines")]
-    // preserve_newlines: bool,
+// #[clap(short, long, help = "Select the bonding box of all selections")]
+// bounding_box: bool,
+// /// Allow selecting trailing newlines
+// #[clap(short, long, help = "Allow selecting trailing newlines")]
+// preserve_newlines: bool,
 }
 
 pub fn box_(options: &Options) -> Result<String, KakError> {
@@ -54,6 +54,15 @@ fn bounding_box(_options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
             )
         })
         .ok_or_else(|| KakError::Custom(String::from("Selection is empty")))?;
+
+    // let (leftmost_row, rightmost_row) = selection_descs
+    //     .first()
+    //     .map(|sd| sd.left.row)
+    //     .zip(selection_descs.last().map(|sd| sd.right.row))
+    //     .ok_or_else(|| KakError::Custom(String::from("Selection is empty")))?;
+
+    // Get every line in the document
+    // let document_selections_desc: Vec<SelectionDesc> = get_selections_desc(Some("%<a-s>"))?;
 
     // Now, split on newline
     // TODO: Should I use <a-s>?
