@@ -929,43 +929,31 @@ mod test {
         // a:  ^_^
         // b: ^____^
         mixed_test!((1, 3), subtract, (0, 5), MaybeSplit::Nothing);
-        // assert_eq!(sd!(1, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        // assert_eq!(sd!(1, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^__^
         // b: ^____^
         mixed_test!((0, 3), subtract, (0, 5), MaybeSplit::Nothing);
-        // assert_eq!(sd!(0, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        // assert_eq!(sd!(0, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a:  ^___^
         // b:  ^___^
         mixed_test!((1, 5), subtract, (1, 5), MaybeSplit::Nothing);
-        // assert_eq!(sd!(1, 5).subtract(&sd!(1, 5)), MaybeSplit::Nothing);
-        // assert_eq!(sd!(1, 5).subtract(&sdr!(1, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^_____^
         // b: ^____^
         mixed_test!((0, 6), subtract, (0, 5), MaybeSplit::Just(sd!(6, 6)));
-        // assert_eq!(sd!(0, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
-        // assert_eq!(sd!(0, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
 
         //    01234567
         // a:  ^____^
         // b: ^____^
         mixed_test!((1, 6), subtract, (0, 5), MaybeSplit::Just(sd!(6, 6)));
-        // assert_eq!(sd!(1, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
-        // assert_eq!(sd!(1, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
 
         //    01234567
         // a: ^____^
         // b:  ^____^
         mixed_test!((0, 5), subtract, (1, 6), MaybeSplit::Just(sd!(0, 0)));
-        // assert_eq!(sd!(0, 5).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
-        // assert_eq!(sd!(0, 5).subtract(&sdr!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
 
         //    01234567
         // a: ^______^
@@ -976,42 +964,30 @@ mod test {
             (1, 6),
             MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7))
         );
-        // assert_eq!(sd!(0, 7).subtract(&sd!(1, 6)),MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7)));
-        // assert_eq!(sd!(0, 7).subtract(&sdr!(1, 6)),MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7)));
 
         //    01234567
         // a:    ^
         // b: ^____^
         mixed_test!((3, 3), subtract, (0, 5), MaybeSplit::Nothing);
-        // assert_eq!(sd!(3, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        // assert_eq!(sd!(3, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^
         // b: ^____^
         mixed_test!((0, 0), subtract, (0, 5), MaybeSplit::Nothing);
-        // assert_eq!(sd!(0, 0).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        // assert_eq!(sd!(0, 0).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^
         // b:  ^____^
         mixed_test!((0, 0), subtract, (1, 6), MaybeSplit::Just(sd!(0, 0)));
-        // assert_eq!(sd!(0, 0).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
-        // assert_eq!(sd!(0, 0).subtract(&sdr!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
 
         //    01234567
         // a:      ^
         // b: ^____^
         mixed_test!((5, 5), subtract, (0, 5), MaybeSplit::Nothing);
-        // assert_eq!(sd!(5, 5).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        // assert_eq!(sd!(5, 5).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a:       ^
         // b: ^____^
         mixed_test!((6, 6), subtract, (0, 5), MaybeSplit::Just(sd!(6, 6)));
-        // assert_eq!(sd!(6, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
-        // assert_eq!(sd!(6, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
     }
 }
