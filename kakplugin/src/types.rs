@@ -30,46 +30,46 @@ pub struct SelectionWithSubselections {
 /// A selection desc that spans only one row
 ///
 /// This type is required when doing operations that involve multiple lines, but logic cannot exist to see if, for example, 2 selection descs with row:1 col:1-10 and row:2 col:0-1 is adjacent
-#[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq, Debug)]
-pub struct RowSelectionDesc {
-    pub row: usize,
-    pub left_col: usize,
-    pub right_col: usize,
-}
+// #[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq, Debug)]
+// pub struct RowSelectionDesc {
+//     pub row: usize,
+//     pub left_col: usize,
+//     pub right_col: usize,
+// }
 
 // impl RowSelectionDesc {
 //     pub fn
 // }
 
-impl TryFrom<SelectionDesc> for RowSelectionDesc {
-    type Error = KakError;
-    fn try_from(sd: SelectionDesc) -> Result<Self, Self::Error> {
-        if sd.left.row == sd.right.row {
-            Ok(Self {
-                row: sd.left.row,
-                left_col: sd.left.col,
-                right_col: sd.right.col,
-            })
-        } else {
-            Err(KakError::MultiRowSelectionNotSupported)
-        }
-    }
-}
+// impl TryFrom<SelectionDesc> for RowSelectionDesc {
+//     type Error = KakError;
+//     fn try_from(sd: SelectionDesc) -> Result<Self, Self::Error> {
+//         if sd.left.row == sd.right.row {
+//             Ok(Self {
+//                 row: sd.left.row,
+//                 left_col: sd.left.col,
+//                 right_col: sd.right.col,
+//             })
+//         } else {
+//             Err(KakError::MultiRowSelectionNotSupported)
+//         }
+//     }
+// }
 
-impl Into<SelectionDesc> for RowSelectionDesc {
-    fn into(self) -> SelectionDesc {
-        SelectionDesc {
-            left: AnchorPosition {
-                row: self.row,
-                col: self.left_col,
-            },
-            right: AnchorPosition {
-                row: self.row,
-                col: self.right_col,
-            },
-        }
-    }
-}
+// impl Into<SelectionDesc> for RowSelectionDesc {
+//     fn into(self) -> SelectionDesc {
+//         SelectionDesc {
+//             left: AnchorPosition {
+//                 row: self.row,
+//                 col: self.left_col,
+//             },
+//             right: AnchorPosition {
+//                 row: self.row,
+//                 col: self.right_col,
+//             },
+//         }
+//     }
+// }
 
 #[derive(Clone, PartialEq, PartialOrd, Ord, Eq, Debug)]
 pub struct SelectionDesc {
@@ -162,23 +162,27 @@ impl SelectionDesc {
 
     #[must_use]
     pub fn subtract(&self, b: &Self) -> MaybeSplit<Self> {
+        let sorted_self = self.sort();
         let sorted_b = b.sort();
 
-        match (sorted_b.contains(&self.left), sorted_b.contains(&self.right), self.contains(&sorted_b)) {
+        match (
+            sorted_b.contains(&sorted_self.left),
+            sorted_b.contains(&sorted_self.right),
+            sorted_self.contains(&sorted_b),
+        ) {
             (true, true, _) => {
-                // self is contained by sorted_b
+                // sorted_self is contained by sorted_b
                 MaybeSplit::Nothing
             }
             (false, false, false) => {
                 // There is no intersection
-                // TODO: Why can't I clone myself?
-                MaybeSplit::Just(self.clone())
+                MaybeSplit::Just(sorted_self)
             }
             (false, false, true) => {
                 // B is contained and it does not intersect with left or right
                 MaybeSplit::JustTwo(
                     Self {
-                        left: self.left,
+                        left: sorted_self.left,
                         right: AnchorPosition {
                             row: sorted_b.left.row,
                             col: sorted_b.left.col.saturating_sub(1),
@@ -189,24 +193,24 @@ impl SelectionDesc {
                             row: sorted_b.right.row,
                             col: sorted_b.right.col.saturating_add(1),
                         },
-                        right: self.right,
+                        right: sorted_self.right,
                     },
                 )
             }
             (true, false, _) => {
-                // Only self's left is contained
+                // Only sorted_self's left is contained
                 MaybeSplit::Just(Self {
                     left: AnchorPosition {
                         row: sorted_b.right.row,
                         col: sorted_b.right.col.saturating_add(1),
                     },
-                    right: self.right,
+                    right: sorted_self.right,
                 })
             }
             (false, true, _) => {
-                // Only self's right is contained
+                // Only sorted_self's right is contained
                 MaybeSplit::Just(Self {
-                    left: self.left,
+                    left: sorted_self.left,
                     right: AnchorPosition {
                         row: sorted_b.left.row,
                         col: sorted_b.left.col.saturating_sub(1),
@@ -825,73 +829,90 @@ mod test {
         //    01234567
         // a:  ^_^
         // b: ^____^
-        assert_eq!(sd!(1, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        assert_eq!(sd!(1, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
+        mixed_test!((1, 3), subtract, (0, 5), MaybeSplit::Nothing);
+        // assert_eq!(sd!(1, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
+        // assert_eq!(sd!(1, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^__^
         // b: ^____^
-        assert_eq!(sd!(0, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        assert_eq!(sd!(0, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
+        mixed_test!((0, 3), subtract, (0, 5), MaybeSplit::Nothing);
+        // assert_eq!(sd!(0, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
+        // assert_eq!(sd!(0, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a:  ^___^
         // b:  ^___^
-        assert_eq!(sd!(1, 5).subtract(&sd!(1, 5)), MaybeSplit::Nothing);
-        assert_eq!(sd!(1, 5).subtract(&sdr!(1, 5)), MaybeSplit::Nothing);
+        mixed_test!((1, 5), subtract, (1, 5), MaybeSplit::Nothing);
+        // assert_eq!(sd!(1, 5).subtract(&sd!(1, 5)), MaybeSplit::Nothing);
+        // assert_eq!(sd!(1, 5).subtract(&sdr!(1, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^_____^
         // b: ^____^
-        assert_eq!(sd!(0, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
-        assert_eq!(sd!(0, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
+        mixed_test!((0, 6), subtract, (0, 5), MaybeSplit::Just(sd!(6, 6)));
+        // assert_eq!(sd!(0, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
+        // assert_eq!(sd!(0, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
 
         //    01234567
         // a:  ^____^
         // b: ^____^
-        assert_eq!(sd!(1, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
-        assert_eq!(sd!(1, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
+        mixed_test!((1, 6), subtract, (0, 5), MaybeSplit::Just(sd!(6, 6)));
+        // assert_eq!(sd!(1, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
+        // assert_eq!(sd!(1, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
 
         //    01234567
         // a: ^____^
         // b:  ^____^
-        assert_eq!(sd!(0, 5).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
-        assert_eq!(sd!(0, 5).subtract(&sdr!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
+        mixed_test!((0, 5), subtract, (1, 6), MaybeSplit::Just(sd!(0, 0)));
+        // assert_eq!(sd!(0, 5).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
+        // assert_eq!(sd!(0, 5).subtract(&sdr!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
 
         //    01234567
         // a: ^______^
         // b:  ^____^
-        assert_eq!(sd! (0, 7).subtract(&sd!(1, 6)), MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7)) );
-        assert_eq!(sd! (0, 7).subtract(&sdr!(1, 6)), MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7)) );
+        mixed_test!(
+            (0, 7),
+            subtract,
+            (1, 6),
+            MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7))
+        );
+        // assert_eq!(sd!(0, 7).subtract(&sd!(1, 6)),MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7)));
+        // assert_eq!(sd!(0, 7).subtract(&sdr!(1, 6)),MaybeSplit::JustTwo(sd!(0, 0), sd!(7, 7)));
 
         //    01234567
         // a:    ^
         // b: ^____^
-        assert_eq!(sd!(3, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        assert_eq!(sd!(3, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
+        mixed_test!((3, 3), subtract, (0, 5), MaybeSplit::Nothing);
+        // assert_eq!(sd!(3, 3).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
+        // assert_eq!(sd!(3, 3).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^
         // b: ^____^
-        assert_eq!(sd!(0, 0).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        assert_eq!(sd!(0, 0).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
+        mixed_test!((0, 0), subtract, (0, 5), MaybeSplit::Nothing);
+        // assert_eq!(sd!(0, 0).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
+        // assert_eq!(sd!(0, 0).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a: ^
         // b:  ^____^
-        assert_eq!(sd!(0, 0).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
-        assert_eq!(sd!(0, 0).subtract(&sdr!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
+        mixed_test!((0, 0), subtract, (1, 6), MaybeSplit::Just(sd!(0, 0)));
+        // assert_eq!(sd!(0, 0).subtract(&sd!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
+        // assert_eq!(sd!(0, 0).subtract(&sdr!(1, 6)), MaybeSplit::Just(sd!(0, 0)));
 
         //    01234567
         // a:      ^
         // b: ^____^
-        assert_eq!(sd!(5, 5).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
-        assert_eq!(sd!(5, 5).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
+        mixed_test!((5, 5), subtract, (0, 5), MaybeSplit::Nothing);
+        // assert_eq!(sd!(5, 5).subtract(&sd!(0, 5)), MaybeSplit::Nothing);
+        // assert_eq!(sd!(5, 5).subtract(&sdr!(0, 5)), MaybeSplit::Nothing);
 
         //    01234567
         // a:       ^
         // b: ^____^
-        assert_eq!(sd!(6, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
-        assert_eq!(sd!(6, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
+        mixed_test!((6, 6), subtract, (0, 5), MaybeSplit::Just(sd!(6, 6)));
+        // assert_eq!(sd!(6, 6).subtract(&sd!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
+        // assert_eq!(sd!(6, 6).subtract(&sdr!(0, 5)), MaybeSplit::Just(sd!(6, 6)));
     }
 }
