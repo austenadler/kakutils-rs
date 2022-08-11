@@ -74,48 +74,6 @@ fn boxed_selections(_options: &Options) -> Result<Vec<SelectionDesc>, KakError> 
         ret
     };
 
-    // let mut ret = vec![];
-    // for sd in selections_desc {
-    //     // The index in the array that contains the first row in the split lines
-    //     let first_row_idx = selections_desc_rows
-    //         .binary_search_by(|sd_search| sd_search.left.row.cmp(&sd.left.row))
-    //         .map_err(|_| {
-    //             KakError::Custom(format!(
-    //                 "Selection row {} not found in split rows",
-    //                 sd.left.row
-    //             ))
-    //         })?;
-
-    //     // The slice of full row selections
-    //     let sd_rows = selections_desc_rows
-    //         .as_slice()
-    //         // Start at the first (should be only) position in the list with this row
-    //         .take(first_row_idx..)
-    //         .ok_or_else(|| {
-    //             KakError::Custom(format!(
-    //                 "Rows selections_desc (len={}) has no idx={}",
-    //                 selections_desc_rows.len(),
-    //                 first_row_idx
-    //             ))
-    //         })?
-    //         // Take row_span rows. For an 8 row selection, get 8 rows, including the one taken before
-    //         .take(..(sd.row_span()))
-    //         .ok_or_else(|| {
-    //             eprintln!(
-    //                 "rows: {}, row_span: {}, remaining: selections_desc_rows: {}",
-    //                 selections_desc_rows.len(),
-    //                 sd.row_span(),
-    //                 selections_desc_rows.len()
-    //             );
-    //             KakError::Custom(String::from(
-    //                 "Selections split on line count mismatch (too few rows)",
-    //             ))
-    //         })?;
-
-    //     ret.extend_from_slice(&to_boxed_selections(sd, sd_rows)[..]);
-    // }
-    // Ok(ret)
-
     Ok(selections_desc
         .iter()
         .map(|sd| {
