@@ -48,6 +48,8 @@ enum Commands {
     Shuf(shuf::Options),
     #[clap(about = "Find unique selections based on optional regex match")]
     Uniq(uniq::Options),
+    #[clap(about = "Invert all selections")]
+    Invert(invert::Options),
     #[clap(about = "Evaluate selections as a math expression", visible_aliases = &["bc", "eval"])]
     MathEval(math_eval::Options),
     #[clap(about = "Trim every selection")]
@@ -100,6 +102,7 @@ fn run() -> Result<String, KakError> {
         Commands::Sort(o) => sort::sort(o),
         Commands::Shuf(o) => shuf::shuf(o),
         Commands::Uniq(o) => uniq::uniq(o),
+        Commands::Invert(o) => invert::invert(o),
         Commands::MathEval(o) => math_eval::math_eval(o),
         Commands::Trim(o) => trim::trim(o),
         Commands::Set(o) => set::set(o),
