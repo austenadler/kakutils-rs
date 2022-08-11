@@ -8,6 +8,7 @@
 // TODO: Remove
 #![allow(dead_code, unused_imports)]
 #![feature(slice_group_by)]
+#![feature(slice_take)]
 
 mod box_;
 mod errors;

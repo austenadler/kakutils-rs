@@ -78,6 +78,14 @@ pub struct SelectionDesc {
 }
 
 impl SelectionDesc {
+    /// Gets the number of rows this selection spans
+    ///
+    /// The newline at the end of a line does not count as an extra row
+    pub fn row_span(&self) -> usize {
+        let s = self.sort();
+        s.right.row - s.left.row + 1
+    }
+
     #[must_use]
     pub fn sort(&self) -> Self {
         if self.left < self.right {
@@ -107,9 +115,15 @@ impl SelectionDesc {
     }
 
     #[must_use]
-    pub fn intersect(&self, other: &Self) -> Option<Self> {
+    pub fn intersect<SD>(&self, other: SD) -> Option<Self>
+    where
+        SD: AsRef<Self>,
+    {
         // Set a and b to the leftmost and rightmost selection
-        let (a, b) = (min(self, other).sort(), max(self, other).sort());
+        let (a, b) = (
+            min(self, other.as_ref()).sort(),
+            max(self, other.as_ref()).sort(),
+        );
 
         match (b.contains(&a.left), b.contains(&a.right), a.contains(&b)) {
             (false, false, false) => {
@@ -153,7 +167,8 @@ impl SelectionDesc {
                 // None
                 if a.right.row == b.left.row && a.right.col == b.left.col.saturating_sub(1) {
                     Some(Self {
-                        left: a.left,right: b.right
+                        left: a.left,
+                        right: b.right,
                     })
                 } else {
                     None
@@ -731,6 +746,11 @@ mod test {
         assert_eq!(SD.sort(), SD.sort().sort());
         assert_eq!(sd!(10, 1, 18, 9).sort(), sd!(10, 1, 18, 9));
         assert_eq!(sdr!(10, 1, 18, 9).sort(), sd!(10, 1, 18, 9));
+
+        assert!(sd!(10, 1, 18, 9).sort().left < sd!(10, 1, 18, 9).sort().right);
+        assert!(sdr!(10, 1, 18, 9).sort().left < sdr!(10, 1, 18, 9).sort().right);
+        assert!(sd!(0, 1).sort().left < sd!(0, 1).sort().right);
+        assert!(sdr!(0, 1).sort().left < sdr!(0, 1).sort().right);
     }
 
     #[test]
