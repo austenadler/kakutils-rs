@@ -12,8 +12,10 @@ pub struct Options {
 pub fn box_(options: &Options) -> Result<String, KakError> {
     if options.bounding_box {
         // The user requested only the bounding box, so select it first
-        set_selections_desc(vec![get_bounding_box(get_selections_desc(None)?)
-            .ok_or_else(|| KakError::Custom(String::from("Selection is empty")))?])?;
+        set_selections_desc(vec![get_bounding_box(get_selections_desc::<&str>(None)?)
+            .ok_or_else(|| {
+            KakError::Custom(String::from("Selection is empty"))
+        })?])?;
     }
 
     let ret_selections_desc = boxed_selections(options)?;
@@ -62,7 +64,7 @@ where
 fn boxed_selections(_options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
     // The selections we want to box, one per box
     let selections_desc = {
-        let mut ret = get_selections_desc(None)?;
+        let mut ret = get_selections_desc::<&str>(None)?;
         ret.sort();
         ret
     };

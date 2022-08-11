@@ -23,8 +23,11 @@ pub fn get_selections(keys: Option<&'_ str>) -> Result<Vec<Selection>, KakError>
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
 // TODO: Use AsRef
-pub fn get_selections_desc(keys: Option<&'_ str>) -> Result<Vec<SelectionDesc>, KakError> {
-    response("%val{selections_desc}", keys)?
+pub fn get_selections_desc<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, KakError>
+where
+    S: AsRef<str>,
+{
+    response("%val{selections_desc}", keys.as_ref())?
         .iter()
         .map(|sd| SelectionDesc::from_str(sd))
         .collect::<Result<Vec<_>, KakError>>()
@@ -184,9 +187,10 @@ where
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened or written to
-pub fn response<S1>(msg: S1, keys: Option<&'_ str>) -> Result<Vec<String>, KakError>
+pub fn response<S1, S2>(msg: S1, keys: Option<S2>) -> Result<Vec<String>, KakError>
 where
     S1: AsRef<str>,
+    S2: AsRef<str>,
 {
     let response_fifo = get_var("kak_response_fifo")?;
 

@@ -51,7 +51,7 @@ pub fn uniq(options: &Options) -> Result<String, KakError> {
     }))?;
 
     // Deselect all `None` strings (all rows that have been seen before)
-    let mut new_selections_desc = get_selections_desc(None)?;
+    let mut new_selections_desc = get_selections_desc::<&str>(None)?;
     new_selections_desc.sort();
     set_selections_desc(
         // Refresh seelections_desc because positions have changed
