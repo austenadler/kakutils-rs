@@ -224,7 +224,6 @@ fn compare(
     // Send all of this into an evaluate-commands block
     write!(
         f,
-        // -save-regs '"'
         r#"evaluate-commands -save-regs '"' %{{
                 set-register '"'"#
     )?;
