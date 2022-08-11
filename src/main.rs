@@ -48,7 +48,7 @@ enum Commands {
     Shuf(shuf::Options),
     #[clap(about = "Find unique selections based on optional regex match")]
     Uniq(uniq::Options),
-    #[clap(about = "Invert all selections")]
+    #[clap(about = "Invert all selections"), visible_aliases = &["inverse"]]
     Invert(invert::Options),
     #[clap(about = "Evaluate selections as a math expression", visible_aliases = &["bc", "eval"])]
     MathEval(math_eval::Options),
