@@ -23,7 +23,7 @@ pub fn invert(_options: &Options) -> Result<String, KakError> {
         let mut ret = get_selections_desc(Some("%<a-s>"))?;
         ret.sort();
         ret.into_iter()
-            // dd - The full row selectiondesc, spanning from col 1 to the rightmost col
+            // dd - The full row selectiondesc, spanning from col 1 to the rightmost col, for every row in the file
             .map(|dd: SelectionDesc| {
                 // For every line, if there are selections to subtract, subtract them all
                 match split_selections_desc
@@ -47,7 +47,10 @@ pub fn invert(_options: &Options) -> Result<String, KakError> {
 
     kakplugin::cmd("exec '<a-_>'")?;
 
-    Ok(format!("Invert {} selections", 0))
+    Ok(format!(
+        "Inverted {} selections",
+        split_selections_desc.len()
+    ))
 }
 
 /// Subtract an iterator of `SelectionDesc`s from a given SelectionDesc
