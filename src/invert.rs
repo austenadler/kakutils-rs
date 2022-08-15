@@ -9,20 +9,20 @@ pub fn invert(_options: &Options) -> Result<String, KakError> {
     // The selections to invert
     let mut split_selections_desc: Vec<(usize, Vec<SelectionDesc>)> = {
         // Split by multiline so subtraction is defined (see below)
-        let mut ret: Vec<SelectionDesc> = get_selections_desc(Some("<a-s>"))?.into_iter().collect();
-        ret.sort();
         // Group by row, so for a given document row, subtraction can iterate over the Vec
-        ret.group_by(|a, b| a.left.row == b.left.row)
+        get_selections_desc(Some("<a-s>"))?
+            .group_by(|a, b| a.left.row == b.left.row)
             .map(|sds| (sds[0].left.row, sds.to_vec()))
             .collect()
     };
 
+    let count_selections = split_selections_desc.len();
+
     let document_descs: Vec<SelectionDesc> = {
         // Every line in the document as a selectiondesc
         // Split by line because subtracting cross-multiline is not always defined for multiline selection descs (ex: 1.1,3.3 - 2.1,3.3 = 1.1,1.<?>)
-        let mut ret = get_selections_desc(Some("%<a-s>"))?;
-        ret.sort();
-        ret.into_iter()
+        get_selections_desc(Some("%<a-s>"))?
+            .into_iter()
             // dd - The full row selectiondesc, spanning from col 1 to the rightmost col, for every row in the file
             .map(|dd: SelectionDesc| {
                 // For every line, if there are selections to subtract, subtract them all
@@ -47,10 +47,7 @@ pub fn invert(_options: &Options) -> Result<String, KakError> {
 
     kakplugin::cmd("exec '<a-_>'")?;
 
-    Ok(format!(
-        "Inverted {} selections",
-        split_selections_desc.len()
-    ))
+    Ok(format!("Inverted {} selections", count_selections))
 }
 
 /// Subtract an iterator of `SelectionDesc`s from a given SelectionDesc

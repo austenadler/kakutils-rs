@@ -27,6 +27,22 @@ pub fn get_selections_desc<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, Kak
 where
     S: AsRef<str>,
 {
+    let mut ret = response("%val{selections_desc}", keys.as_ref())?
+        .iter()
+        .map(|sd| SelectionDesc::from_str(sd).map(|x| x.sort()))
+        .collect::<Result<Vec<_>, KakError>>()?;
+    ret.sort();
+    Ok(ret)
+}
+
+/// # Errors
+///
+/// Will return `Err` if command fifo could not be opened, read from, or written to
+// TODO: Use AsRef
+pub fn get_selections_desc_unsorted<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, KakError>
+where
+    S: AsRef<str>,
+{
     response("%val{selections_desc}", keys.as_ref())?
         .iter()
         .map(|sd| SelectionDesc::from_str(sd))
@@ -52,7 +68,7 @@ where
 /// or if `selections.len() != selections_desc.len`
 pub fn get_selections_with_desc(keys: Option<&'_ str>) -> Result<Vec<SelectionWithDesc>, KakError> {
     let mut selections = get_selections(keys)?;
-    let selections_desc = get_selections_desc(keys)?;
+    let selections_desc = get_selections_desc_unsorted(keys)?;
 
     if selections.len() != selections_desc.len() {
         return Err(KakError::KakResponse(format!(

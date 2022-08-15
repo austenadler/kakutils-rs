@@ -63,18 +63,10 @@ where
 /// Do this by getting each selection, then getting each whole-row (col 0 to col max) and passing the range of whole-rows into helper `to_boxed_selections`
 fn boxed_selections(_options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
     // The selections we want to box, one per box
-    let selections_desc = {
-        let mut ret = get_selections_desc::<&str>(None)?;
-        ret.sort();
-        ret
-    };
+    let selections_desc = get_selections_desc::<&str>(None)?;
 
     // Whole-row selections split on newline
-    let selections_desc_rows = {
-        let mut ret = get_selections_desc(Some("<a-x><a-s>"))?;
-        ret.sort();
-        ret
-    };
+    let selections_desc_rows = get_selections_desc(Some("<a-x><a-s>"))?;
 
     Ok(selections_desc
         .iter()
