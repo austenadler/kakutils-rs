@@ -4,9 +4,12 @@ use kakplugin::{
 use std::cmp::{max, min};
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
-    // /// Bounding box mode, which selects the largest box to contain everything
+    /// Bounding box mode, which selects the largest box to contain everything
     #[clap(short, long, help = "Select the bonding box of all selections")]
     bounding_box: bool,
+    /// Excludes newlines from resulting selection
+    #[clap(short, long, help = "Do not include newlines")]
+    no_newline: bool,
 }
 
 pub fn box_(options: &Options) -> Result<String, KakError> {
@@ -61,12 +64,20 @@ where
 /// Implementation that converts each selection to a box with the top left corner at min(anchor.col, cursor.col) and bottom right at max(anchor.col, cursor.col)
 ///
 /// Do this by getting each selection, then getting each whole-row (col 0 to col max) and passing the range of whole-rows into helper `to_boxed_selections`
-fn boxed_selections(_options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
+fn boxed_selections(options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
     // The selections we want to box, one per box
     let selections_desc = get_selections_desc::<&str>(None)?;
 
+    let whole_line_selection_command = if options.no_newline {
+        // Select everything and only keep non-newlines
+        "<a-x>s^[^\\n]+<ret>"
+    } else {
+        // Select everything and split
+        "<a-x><a-s>"
+    };
+
     // Whole-row selections split on newline
-    let selections_desc_rows = get_selections_desc(Some("<a-x><a-s>"))?;
+    let selections_desc_rows = get_selections_desc(Some(whole_line_selection_command))?;
 
     Ok(selections_desc
         .iter()

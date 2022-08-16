@@ -4,8 +4,12 @@ use kakplugin::{
 };
 use std::{fs, str::FromStr};
 #[derive(clap::StructOpt, Debug)]
-pub struct Options;
-pub fn invert(_options: &Options) -> Result<String, KakError> {
+pub struct Options {
+    #[clap(short, long, help = "Do not include newlines")]
+    no_newline: bool,
+}
+
+pub fn invert(options: &Options) -> Result<String, KakError> {
     // The selections to invert
     let mut split_selections_desc: Vec<(usize, Vec<SelectionDesc>)> = {
         // Split by multiline so subtraction is defined (see below)
@@ -18,10 +22,18 @@ pub fn invert(_options: &Options) -> Result<String, KakError> {
 
     let count_selections = split_selections_desc.len();
 
+    let whole_document_selection_command = if options.no_newline {
+        // Select everything and only keep non-newlines
+        "%s^[^\\n]+<ret>"
+    } else {
+        // Select everything and split
+        "%<a-s>"
+    };
+
     let document_descs: Vec<SelectionDesc> = {
         // Every line in the document as a selectiondesc
         // Split by line because subtracting cross-multiline is not always defined for multiline selection descs (ex: 1.1,3.3 - 2.1,3.3 = 1.1,1.<?>)
-        get_selections_desc(Some("%<a-s>"))?
+        get_selections_desc(Some(whole_document_selection_command))?
             .into_iter()
             // dd - The full row selectiondesc, spanning from col 1 to the rightmost col, for every row in the file
             .map(|dd: SelectionDesc| {
