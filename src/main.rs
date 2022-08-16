@@ -67,7 +67,8 @@ enum Commands {
 fn main() {
     // First, check if we are just getting candidates to run the program. kak_command_fifo is not needed for this
     let args = env::args().collect::<Vec<_>>();
-    if args.len() == 2 && args[1] == "shell-script-candidates" {
+    eprintln!("Len: {}, args: {:?}", args.len(), args);
+    if args.len() >= 2 && args[1] == "shell-script-candidates" {
         match kakplugin::generate_shell_script_candidates(Commands::VARIANTS) {
             Err(e) => eprintln!("{e:?}"),
             Ok(()) => {}
