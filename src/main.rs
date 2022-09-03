@@ -76,6 +76,7 @@ fn main() {
         return;
     }
 
+    // This will be required for all subcommands from here on
     if get_var("kak_command_fifo")
         .and(get_var("kak_response_fifo"))
         .is_err()

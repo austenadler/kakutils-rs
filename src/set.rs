@@ -289,6 +289,10 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
     ret
 }
 
+/// Performs an `Operation` on some set of keys
+/// * `operation` - The operation to perform
+/// * `left_keys` - The set on the left side of the operator
+/// * `right_keys` - The set on the right side of the operator
 fn key_set_operation<'a>(
     operation: &Operation,
     left_keys: &LinkedHashSet<&'a Selection>,
@@ -317,6 +321,9 @@ fn key_set_operation<'a>(
     }
 }
 
+/// Parses the arguments used for set manipulation
+///
+/// Arguments can be given like `a-b`, `a - b`
 fn parse_arguments(args: &[String]) -> Result<(Register, Operation, Register), KakError> {
     let args = if args.len() == 1 {
         // They gave us something like "a-b" or "c?d"

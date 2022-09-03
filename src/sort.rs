@@ -10,7 +10,7 @@ pub struct Options {
     #[clap(
         short = 's',
         long,
-        help = "Optional register for using subselection ma tching"
+        help = "Optional register for using subselection matching"
     )]
     subselections_register: Option<char>,
     // TODO: Can we invert a boolean? This name is terrible
