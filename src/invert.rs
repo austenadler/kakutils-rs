@@ -7,6 +7,9 @@ use std::{fs, str::FromStr};
 pub struct Options {
     #[clap(short, long, help = "Do not include newlines")]
     no_newline: bool,
+
+    #[clap(short, long, help = "Invert by line instead of by entire document")]
+    line: bool,
 }
 
 pub fn invert(options: &Options) -> Result<String, KakError> {
@@ -22,12 +25,15 @@ pub fn invert(options: &Options) -> Result<String, KakError> {
 
     let count_selections = split_selections_desc.len();
 
-    let whole_document_selection_command = if options.no_newline {
+    let whole_document_selection_command = match (options.line, options.no_newline) {
         // Select everything and only keep non-newlines
-        "%s^[^\\n]+<ret>"
-    } else {
+        (false, true) => "%s^[^\\n]+<ret>",
         // Select everything and split
-        "%<a-s>"
+        (false, false) => "%<a-s>",
+        // Select entire line, then remove newline
+        (true, true) => "<a-x><a-s>s^[^\\n]+<ret>",
+        // Select entire line, including newline
+        (true, false) => "<a-x><a-s>",
     };
 
     let document_descs: Vec<SelectionDesc> = {
