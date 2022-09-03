@@ -1,35 +1,134 @@
+:toc:
+:nofooter:
+:!webfonts:
+
 = kakutils-rs
 
-Sort by regular expression or lexicographically, find uniqes, shuffle, or evaluate rust selections without spawning a new command for each.
+Sort by regular expression or lexicographically, find uniqes, shuffle, or evaluate rust selections without spawning a new command for each selection.
 
 [![asciicast](https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai.svg)](https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai)
 
 == Example
 
-. Imagine you want to sort these stages
-+
-[source,groovy]
-----
-stage("Build") { # Step 1
-    8+3
-}
+Sort stages by step number:
 
-stage("Compile") { # Step 5
-    math::log2(8)
-}
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">stage(&quot;Make&quot;) { # Step 100 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    1+ 2+ 3+ 4+ 5+ 6+ 7+ 8+ 9+ 10 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#504945;"> </span><span style="background-color:#504945;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">stage(&quot;Compile&quot;) { # Step 5 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    math::log2(8) </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#504945;"> </span><span style="background-color:#504945;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">stage(&quot;Build&quot;) { # Step 1 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    8+3 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#504945;"> </span><span style="background-color:#504945;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">stage(&quot;Assemble&quot;) { # Step 10 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">    2^9+math::log2(10) </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">15|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#a89984;"> </span><span style="background-color:#a89984;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#fb4934;">:</span><span style="color:#ebdbb2;background-color:#fb4934;"></span><span style="color:#ebdbb2;background-color:#282828;">utils sort \d+</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;"> </span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">                 </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 15:2 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="font-weight:bold;color:#ebdbb2;background-color:#282828;"></span><span style="font-weight:bold;color:#fabd2f;background-color:#282828;">prompt</span><span style="color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
 
-stage("Assemble") { # Step 10
-    2^9+math::log2(10)
-}
+After `sort \d+`:
 
-stage("Make") { # Step 100
-    not_a_formula
-}
-----
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">stage(&quot;Build&quot;) { # Step 1 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    8+3 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#504945;"> </span><span style="background-color:#504945;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">stage(&quot;Compile&quot;) { # Step 5 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    math::log2(8) </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#504945;"> </span><span style="background-color:#504945;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">stage(&quot;Assemble&quot;) { # Step 10 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    2^9+math::log2(10) </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#504945;"> </span><span style="background-color:#504945;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">stage(&quot;Make&quot;) { # Step 100 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">    1+ 2+ 3+ 4+ 5+ 6+ 7+ 8+ 9+ 10 </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">15|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">}</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#a89984;"> </span><span style="background-color:#a89984;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Sorted 4 selections</span><span style="background-color:#282828;">          </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 15:2 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">4 sels (4)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
 
-. Select the stage and stage body with: `%sstage<ret>MLM`
-. Sort the selection by step number with: `:utils sort #\d+<ret>` (sort on whole capture) or `:utils sort "'.+?#(\d).+?'"` (sort on first capture group, which contains only the digits)
-. Note if you just run `:utils sort<ret>`
+Evaluate all math expressions:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Build&quot;) { # Step 1</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">8+</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">3</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Compile&quot;) { # Step 5</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">math::log2</span><span style="font-weight:bold;color:#706a5b;background-color:#83a598;">(</span><span style="color:#706a5b;"></span><span style="color:#706a5b;background-color:#83a598;">8</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">)</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Assemble&quot;) { # Step 10</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">2^9+math::log2</span><span style="font-weight:bold;color:#706a5b;background-color:#83a598;">(</span><span style="color:#706a5b;"></span><span style="color:#706a5b;background-color:#83a598;">10</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">)</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Make&quot;) { # Step 100</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#ebdbb2;background-color:#83a598;">1+ 2+ 3+ 4+ 5+ 6+ 7+ 8+ 9+ 1</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">0</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">15|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#fb4934;">:</span><span style="color:#ebdbb2;background-color:#fb4934;"></span><span style="color:#ebdbb2;background-color:#282828;">utils bc</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;"> </span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">                      </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 14:33 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="font-weight:bold;color:#ebdbb2;background-color:#282828;"></span><span style="font-weight:bold;color:#fabd2f;background-color:#282828;">prompt</span><span style="color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `bc`
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Build&quot;) { # Step 1</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">1</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">1</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Compile&quot;) { # Step 5</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">3</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Assemble&quot;) { # Step 10</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">515.321928094887</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">3</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#ebdbb2;background-color:#282828;">stage(&quot;Make&quot;) { # Step 100</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#ebdbb2;background-color:#282828;">    </span><span style="color:#ebdbb2;background-color:#83a598;">5</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">5</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">15|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Processed 4 selections</span><span style="background-color:#282828;">       </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 14:6 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">4 sels (4)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
 
 == Configuration
 
@@ -42,7 +141,7 @@ cargo install --git https://github.com/austenadler/kakutils-rs
 ----
 define-command utils -params .. -shell-script-candidates %{
     # use kak_token_to_complete;
-    kakutils-rs shell-script-candidates
+    kakutils-rs shell-script-candidates "$@"
 } %{
     eval -save-regs '"' %{
         eval %sh{
@@ -53,13 +152,733 @@ define-command utils -params .. -shell-script-candidates %{
 }
 ----
 
-== Usage
+== Commands
 
-* Make multiple selections
-* Run `utils sort` to sort the selections lexicographically
-* Run `utils sort REGEX` to sort by regex match
-** If the regex does not contain a capture group
-** If the regex contains at least one capture group
+=== box
+
+Creates a box with corners on each selection's cursor and anchor
+
+* `-b`/`--bounding-box` - Create only one box with corners on the left/bottom/right/top-most cursor or anchor
+
+.Example
+[%collapsible]
+====
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">**</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">* this is a *scratch* buffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** use </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">i</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">t for</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> notes or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** this is </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> *scratch* buffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for n</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">ote</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* b</span><span style="color:#ebdbb2;background-color:#83a598;">uffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">*** use it for notes or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">*** this is a *scratch* buffer whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">h</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                             </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 7:36 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">4 sels (4)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `box`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">**</span><span style="color:#ebdbb2;background-color:#83a598;">* this</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;"> </span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;">is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">**</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">* use </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">i</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">t f</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">or</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;"> </span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">a </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">scratch* buffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for n</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">ote</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* b</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">uffer whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or o</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">pen a file</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;"> </span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* b</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">uffer whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Boxed 8 selection(s)</span><span style="background-color:#282828;">          </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 1:9 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">8 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+====
+
+=== invert
+
+Selects anything not already selected
+
+* Aliases: `inverse`
+* `-n`/`--no-newline` - Do not include newlines
+* `-l`/`--line` - Invert by line instead of by entire document
+
+.Example
+[%collapsible]
+====
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">**</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">* this is a *scratch* buffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** use </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">i</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">t for</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> notes or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** this is </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> *scratch* buffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for n</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">ote</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* b</span><span style="color:#ebdbb2;background-color:#83a598;">uffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">*** use it for notes or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">*** this is a *scratch* buffer whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">h</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                             </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 7:36 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">4 sels (4)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `invert`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">*</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">*</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;">* this is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">*** use i</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">t fo</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> *scratch* buffer which won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** use it for </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">n</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">otes</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> or open a file buffer with the :edit command ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** this is a *scratch* </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">b</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">uffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* buffer which</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> won't be automatically saved ***
+</span><span style="color:#7c6f64;background-color:#83a598;"></span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#504945;">
+</span><span style="color:#504945;background-color:#504945;"></span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Inverted 7 selections</span><span style="background-color:#282828;">         </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 1:2 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">5 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `invert -nl`.
+Notice newlines are not selected and nothing is selected on a line that didn't already have a selection:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">*</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">*</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;">* this is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">*** use i</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">t fo</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> *scratch* buffer which won't be automatically saved **</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** use it for </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">n</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">otes</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> or open a file buffer with the :edit command **</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*** this is a *scratch* </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">b</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">uffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* buffer which</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;"> won't be automatically saved **</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Inverted 7 selections</span><span style="background-color:#282828;">         </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 1:2 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">7 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+====
+
+=== math-eval
+
+Evaluates each selection as a math expression.
+Note that this is similar to `|bc<ret>`, but does not spawn a new process for each selection.
+Uses link:https://docs.rs/evalexpr/latest/evalexpr/[evalexpr^] to evaluate expressions.
+
+* Aliases: `bc`
+
+.Example
+[%collapsible]
+====
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">2 * </span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">4</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">8/</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">3</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">.123^</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">8</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">math::sin</span><span style="font-weight:bold;color:#706a5b;background-color:#83a598;">(</span><span style="color:#706a5b;"></span><span style="color:#706a5b;background-color:#83a598;">3.14</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">)</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">math::ln</span><span style="font-weight:bold;color:#ebdbb2;background-color:#83a598;">(</span><span style="color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#83a598;">1000</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">)</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                            </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 12:14 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">5 sels (5)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `bc`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">8</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">2</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">0.0000000523890944282628</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">7</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">0.001592652916486828</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">2</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">6.90775527898213</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">7</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Processed 5 selections</span><span style="background-color:#282828;">      </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 12:17 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">5 sels (5)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+====
+
+=== set
+
+Performs set operations on selections with registers.
+This requires at least one register to contain selections (`"xZ` where `x` is the one-letter register name).
+
+* First argument is the register and operation
+** For example `a-b` or `a&b` or `_?b`
+* Operations
+** `&` - Set intersection
+** `-`/`\\` - Set subtraction (order matters)
+** `+` - Set union
+** `?`/`=` - Set comparison (order matters)
+This will open a new scratch buffer comparing the selection counts and content
+* Registers
+** Any register `a-z`/`A-Z` works
+** `_` is treated as the current selection, and does not require you to manually set a register
+*** For example, `a-_` will return the set of selections in `a` that are not currently selected in the editor
+
+.Example
+[%collapsible]
+====
+`x` register (`"xZ`) content:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">a </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">b </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">f</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">c </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">b</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">d </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">e </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">h</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">f</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">g</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">h</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">Saved 5 selections to register 'x'</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> …ch* 5:3 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">5 sels (5)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> a</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">b</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> f</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">c</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> b</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> d</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> h</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">f</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">g</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">h</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                              </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 8:1 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">8 sels (8)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `set \x` or `set _-x`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">a a</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">b f</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">c</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> b</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">d d</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> h</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">f</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">g</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">h</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">_-x returned 3 selections</span><span style="background-color:#282828;">     </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 3:1 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">3 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `set &x` or `set _&x`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">a</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> a</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">b</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> f</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">c b</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> d</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">e h</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">f</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">g</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">_&amp;x returned 5 selections</span><span style="background-color:#282828;">     </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 1:1 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">5 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `set ?x` or `set _=x`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">?       _       a       selection</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">=       1       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">a</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="color:#ebdbb2;background-color:#282828;">=       1       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">b</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">=       1       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">=       1       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">f</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">=       1       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="color:#ebdbb2;background-color:#282828;">&gt;       0       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">c</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">&gt;       0       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#ebdbb2;background-color:#282828;">&gt;       0       1       </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">g</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Compared 8 selections   *kakplugin-set* 2:7 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">8 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+====
+
+=== shuf
+
+Shuffle selections randomly
+
+.Example
+[%collapsible]
+====
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">0</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">1</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">2</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">3</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">4</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">5</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">6</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">7</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">8</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">9</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">rando</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">m</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#ebdbb2;background-color:#83a598;">word</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">s</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                           </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 1:32 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">12 sels (12)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `shuf`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">4</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">1</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">9</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">3</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">word</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">rando</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">m</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">6</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">5</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">2</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">0</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">8</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">7</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Shuf 12 selections</span><span style="background-color:#282828;">         </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 1:32 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">12 sels (12)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+====
+
+=== sort
+
+Sort selections by regular expression or content
+
+* `-S`/`--no-skip-whitespace` - Do not treat trimmed value of selections when sorting (by default, surrounding selection whitespace is trimmed before comparison)
+* `-l`/`--lexicographic-sort` - Sort numbers lexicographically (`10 > 2`)
+* `-r`/`--reverse` - Reverse sorting
+* `-i`/`--ignore-case` - Ignore case when sorting
+* `[REGEX]` - Optional regex comparison key
+
+.Example
+[%collapsible]
+====
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">thi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*scratch</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">buffe</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">won'</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">b</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">automaticall</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">y</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">save</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">us</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fo</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">note</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">o</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">ope</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">n</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fil</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">buffe</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">wit</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">th</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">:edi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">comman</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#ebdbb2;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">*</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">block 3 {</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">    #</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">section 1 {</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#ebdbb2;background-color:#282828;">    //</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="color:#ebdbb2;background-color:#282828;">region 2 {</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#ebdbb2;background-color:#282828;">    --</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                           </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 2:69 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">27 sels (27)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `sort`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*scratch</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">:edi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">automaticall</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">y</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">b</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">buffe</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">buffe</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">comman</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fil</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fo</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">note</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">ope</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">n</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">o</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">save</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">th</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">thi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">us</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">wit</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#ebdbb2;background-color:#83a598;">won'</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">t</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#ebdbb2;background-color:#282828;">block 3 {</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;">    #</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#ebdbb2;background-color:#282828;">section 1 {</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#ebdbb2;background-color:#282828;">    //</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="color:#ebdbb2;background-color:#282828;">region 2 {</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#ebdbb2;background-color:#282828;">    --</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#ebdbb2;background-color:#282828;">}</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Sorted 27 selections</span><span style="background-color:#282828;">       </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 2:72 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">27 sels (27)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">b</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#83a598;">lock 3 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">    # </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#706a5b;background-color:#7c6f64;"></span><span style="color:#706a5b;background-color:#83a598;">ection 1 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    // </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#706a5b;background-color:#7c6f64;"></span><span style="color:#706a5b;background-color:#83a598;">egion 2 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    -- </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                              </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 4:1 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">3 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `sort` (Sort alphabetically):
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">b</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#83a598;">lock 3 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">    # </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#706a5b;background-color:#7c6f64;"></span><span style="color:#706a5b;background-color:#83a598;">egion 2 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    -- </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#706a5b;background-color:#7c6f64;"></span><span style="color:#706a5b;background-color:#83a598;">ection 1 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    // </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Sorted 3 selections</span><span style="background-color:#282828;">           </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 4:1 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">3 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `sort \d+` (Sort by first digit in selection)
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;">*** this is a *scratch* buffer which won't be automatically saved ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;">*** use it for notes or open a file buffer with the :edit command ***</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 3|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 4|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">s</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#83a598;">ection 1 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 5|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">    // </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 6|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 7|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 8|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#706a5b;background-color:#7c6f64;"></span><span style="color:#706a5b;background-color:#83a598;">egion 2 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 9|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    -- </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">10|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">11|</span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">12|</span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">b</span><span style="color:#706a5b;background-color:#7c6f64;"></span><span style="color:#706a5b;background-color:#83a598;">lock 3 { </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">13|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">    # </span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;">14|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">}</span><span style="background-color:#83a598;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">Sorted 3 selections</span><span style="background-color:#282828;">           </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 4:1 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">3 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+====
+
+=== uniq
+
+Select only unique selections
+
+* `-S`/`--no-skip-whitespace` - Do not treat trimmed value of selections when comparing (by default, surrounding selection whitespace is trimmed before comparison)
+* `-i`/`--ignore-case` - Ignore case
+* `[REGEX]` - Optional regex comparison key
+
+.Example
+[%collapsible]
+====
+Before:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">thi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*scratch</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">buffe</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">won'</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">b</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">automaticall</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">y</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">save</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="background-color:#7c6f64;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">us</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fo</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">note</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">o</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">ope</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">n</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fil</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">buffe</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">wit</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">th</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">:edi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">comman</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#ebdbb2;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">*</span><span style="background-color:#ebdbb2;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+                           </span><span style="color:#ebdbb2;background-color:#282828;">*scratch* 2:69 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">27 sels (27)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+
+After `uniq`:
+
+++++
+<pre style="background-color:#282828;display:inline-block;">
+<span style="color:#7c6f64;"></span><span style="color:#7c6f64;background-color:#282828;"> 1|</span><span style="color:#ebdbb2;background-color:#282828;"></span><span style="color:#ebdbb2;background-color:#83a598;">**</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#ebdbb2;">*</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">thi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#7c6f64;">a</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">*scratch</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">*</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">buffe</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">whic</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">won'</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">b</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">automaticall</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">y</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">save</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#282828;background-color:#fb4934;"> </span><span style="background-color:#fb4934;"></span><span style="background-color:#282828;">
+</span><span style="color:#7c6f64;background-color:#282828;"> 2|</span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">us</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">i</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fo</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">note</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">s</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">o</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">r</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">ope</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">n</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">  </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">fil</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;">  </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">wit</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">h</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">th</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">e</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">:edi</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">t</span><span style="color:#ebdbb2;background-color:#7c6f64;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#706a5b;background-color:#282828;"></span><span style="color:#706a5b;background-color:#83a598;">comman</span><span style="color:#282828;background-color:#83a598;"></span><span style="color:#282828;background-color:#7c6f64;">d</span><span style="color:#282828;background-color:#fb4934;"> </span><span style="background-color:#fb4934;"></span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#504945;background-color:#282828;">~</span><span style="background-color:#282828;">
+</span><span style="color:#ebdbb2;background-color:#282828;">22 unique selections out of 27 …ratch* 1:3 </span><span style="color:#282828;background-color:#282828;"></span><span style="color:#282828;background-color:#ebdbb2;">[scratch]</span><span style="color:#ebdbb2;background-color:#ebdbb2;"></span><span style="color:#ebdbb2;background-color:#282828;"> </span><span style="color:#d3869b;background-color:#282828;">22 sels (1)</span><span style="color:#ebdbb2;background-color:#282828;"> - client0@[616]
+</span></pre>
+++++
+====
+
+=== incr/decr
+Select only unique selections
+
+* `[AMOUNT]` - Optional increment/decrement count
 
 == TODO
 
