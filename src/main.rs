@@ -12,6 +12,7 @@
 
 mod box_;
 mod errors;
+mod incr;
 mod invert;
 mod math_eval;
 mod set;
@@ -62,6 +63,8 @@ enum Commands {
     Stdin(stdin::Options),
     #[clap(about = "Make boxes out of selections", visible_aliases = &["square"])]
     Box_(box_::Options),
+    Decr(incr::Options),
+    Incr(incr::Options),
 }
 
 fn main() {
@@ -111,5 +114,7 @@ fn run() -> Result<String, KakError> {
         // Commands::Xargs(o) => xargs::xargs(o),
         Commands::Stdin(o) => stdin::stdin(o),
         Commands::Box_(o) => box_::box_(o),
+        Commands::Incr(o) => incr::incr(o, true),
+        Commands::Decr(o) => incr::incr(o, false),
     }
 }
