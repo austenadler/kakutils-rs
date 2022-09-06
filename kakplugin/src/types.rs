@@ -325,7 +325,7 @@ impl FromStr for AnchorPosition {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum Register {
     Numeric0,
     Numeric1,

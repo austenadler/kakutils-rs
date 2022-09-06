@@ -25,9 +25,10 @@ pub fn math_eval(_options: &Options) -> Result<String, KakError> {
         format!("Processed {} selections", selections.len())
     } else {
         format!(
-            "Processed {} selections ({} errors)",
+            "Processed {} selections ({} error{})",
             selections.len().saturating_sub(err_count),
-            err_count
+            err_count,
+            if err_count == 1 { "" } else { "s" }
         )
     })
 }

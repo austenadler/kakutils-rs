@@ -1,4 +1,4 @@
-use std::num::ParseIntError;
+use std::{fmt, fmt::Display, num::ParseIntError};
 
 #[derive(Debug)]
 pub enum KakError {
@@ -16,9 +16,13 @@ pub enum KakError {
     NotImplemented(&'static str),
     /// Custom error string
     Custom(String),
+    /// Custom static error string
+    CustomStatic(&'static str),
     /// The selections/selections_desc list passed was empty
     SetEmptySelections,
 }
+
+impl std::error::Error for KakError {}
 
 impl KakError {
     pub fn details(&self) -> String {
@@ -30,6 +34,7 @@ impl KakError {
             Self::Io(e) => format!("{e:?}"),
             Self::NotImplemented(e) => e.to_string(),
             Self::Custom(s) => s.clone(),
+            Self::CustomStatic(s) => s.to_string(),
             Self::SetEmptySelections => {
                 String::from("Attempted to set selections/selections_desc to empty list")
             }
@@ -37,22 +42,23 @@ impl KakError {
     }
 }
 
-impl ToString for KakError {
-    fn to_string(&self) -> String {
-        format!(
-            "Error: {}",
-            match self {
-                Self::EnvVarNotSet(_) => "env var not set",
-                Self::EnvVarUnicode(_) => "env var not unicode",
-                Self::Parse(_) => "Could not parse",
-                Self::KakResponse(_) => "Invalid kak response",
-                Self::Io(_) => "IO error",
-                Self::NotImplemented(_) => "Not Implemented",
-                Self::Custom(s) => s,
-                Self::SetEmptySelections =>
-                    "Attempted to set selections/selections_desc to empty list",
-            }
-        )
+impl Display for KakError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Error: ")?;
+        match self {
+            Self::EnvVarNotSet(_) => write!(f, "env var not set"),
+            Self::EnvVarUnicode(_) => write!(f, "env var not unicode"),
+            Self::Parse(_) => write!(f, "Could not parse"),
+            Self::KakResponse(_) => write!(f, "Invalid kak response"),
+            Self::Io(_) => write!(f, "IO error"),
+            Self::NotImplemented(_) => write!(f, "Not Implemented"),
+            Self::Custom(s) => write!(f, "{}", s),
+            Self::CustomStatic(s) => write!(f, "{}", s),
+            Self::SetEmptySelections => write!(
+                f,
+                "Attempted to set selections/selections_desc to empty list"
+            ),
+        }
     }
 }
 

@@ -40,11 +40,12 @@ pub fn incr(options: &Options, should_increment: bool) -> Result<String, KakErro
         )
     } else {
         format!(
-            "{} {} selections by {} ({} errors)",
+            "{} {} selections by {} ({} error{})",
             if should_increment { "Incr" } else { "Decr" },
             selections.len().saturating_sub(err_count),
             options.amount,
             err_count,
+            if err_count == 1 { "" } else { "s" }
         )
     })
 }

@@ -9,6 +9,7 @@
 #![allow(dead_code, unused_imports)]
 #![feature(slice_group_by)]
 #![feature(slice_take)]
+#![feature(array_chunks)]
 
 mod box_;
 mod errors;
@@ -22,6 +23,7 @@ mod stdin;
 mod trim;
 mod uniq;
 mod utils;
+mod xlookup;
 // mod xargs;
 use clap::{Parser, Subcommand};
 use kakplugin::{display_message, get_var, KakError};
@@ -63,7 +65,11 @@ enum Commands {
     Stdin(stdin::Options),
     #[clap(about = "Make boxes out of selections", visible_aliases = &["square"])]
     Box_(box_::Options),
+    #[clap(about = "Map selections based on a register", visible_aliases = &["vlookup"])]
+    Xlookup(xlookup::Options),
+    #[clap(about = "Increment selections")]
     Decr(incr::Options),
+    #[clap(about = "Decrement selections")]
     Incr(incr::Options),
 }
 
@@ -114,6 +120,7 @@ fn run() -> Result<String, KakError> {
         // Commands::Xargs(o) => xargs::xargs(o),
         Commands::Stdin(o) => stdin::stdin(o),
         Commands::Box_(o) => box_::box_(o),
+        Commands::Xlookup(o) => xlookup::xlookup(o),
         Commands::Incr(o) => incr::incr(o, true),
         Commands::Decr(o) => incr::incr(o, false),
     }
