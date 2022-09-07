@@ -128,7 +128,7 @@ dependencies = [
 name = "kakplugin"
 version = "0.1.0"
 dependencies = [
- "shellwords",
+ "shell-words",
 ]
 
 [[package]]
@@ -143,7 +143,6 @@ dependencies = [
  "linked_hash_set",
  "rand",
  "regex",
- "shellwords",
  "strum",
  "strum_macros",
 ]
@@ -292,14 +291,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0a5f7c728f5d284929a1cccb5bc19884422bfe6ef4d6c409da2c41838983fcf"
 
 [[package]]
-name = "shellwords"
+name = "shell-words"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89e515aa4699a88148ed5ef96413ceef0048ce95b43fbc955a33bde0a70fcae6"
-dependencies = [
- "lazy_static",
- "regex",
-]
+checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
 name = "strsim"

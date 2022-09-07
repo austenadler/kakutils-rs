@@ -24,8 +24,8 @@ impl From<&str> for KakMessage {
     }
 }
 
-impl From<shellwords::MismatchedQuotes> for KakMessage {
-    fn from(err: shellwords::MismatchedQuotes) -> Self {
+impl From<kakplugin::ParseError> for KakMessage {
+    fn from(err: kakplugin::ParseError) -> Self {
         Self("Corrupt kak response".to_string(), Some(err.to_string()))
     }
 }

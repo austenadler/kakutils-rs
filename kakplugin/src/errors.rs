@@ -68,8 +68,8 @@ impl From<std::io::Error> for KakError {
     }
 }
 
-impl From<shellwords::MismatchedQuotes> for KakError {
-    fn from(e: shellwords::MismatchedQuotes) -> Self {
+impl From<shell_words::ParseError> for KakError {
+    fn from(e: shell_words::ParseError) -> Self {
         Self::Parse(format!("Shell could not be parsed: {e:?}"))
     }
 }

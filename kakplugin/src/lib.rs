@@ -1,6 +1,7 @@
 mod errors;
 pub mod types;
 pub use errors::KakError;
+pub use shell_words::ParseError;
 use std::{
     env,
     fs::{self, File, OpenOptions},
@@ -225,7 +226,7 @@ where
         ),
     })?;
 
-    Ok(shellwords::split(&fs::read_to_string(&get_var(
+    Ok(shell_words::split(&fs::read_to_string(&get_var(
         "kak_response_fifo",
     )?)?)?)
 }
