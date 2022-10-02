@@ -8,6 +8,8 @@ pub enum KakError {
     EnvVarUnicode(String),
     /// There was an error parsing a response from kak
     Parse(String),
+    /// The string could not be converted into UTF8
+    Utf8Error(std::string::FromUtf8Error),
     /// There was an error with a response kak gave
     KakResponse(String),
     /// IO Error
@@ -30,6 +32,7 @@ impl KakError {
             Self::EnvVarNotSet(e) => e.clone(),
             Self::EnvVarUnicode(e) => e.clone(),
             Self::Parse(e) => e.clone(),
+            Self::Utf8Error(e) => e.to_string(),
             Self::KakResponse(e) => e.clone(),
             Self::Io(e) => format!("{e:?}"),
             Self::NotImplemented(e) => e.to_string(),
@@ -49,6 +52,7 @@ impl Display for KakError {
             Self::EnvVarNotSet(_) => write!(f, "env var not set"),
             Self::EnvVarUnicode(_) => write!(f, "env var not unicode"),
             Self::Parse(_) => write!(f, "Could not parse"),
+            Self::Utf8Error(_) => write!(f, "The string is not valid UTF-8"),
             Self::KakResponse(_) => write!(f, "Invalid kak response"),
             Self::Io(_) => write!(f, "IO error"),
             Self::NotImplemented(_) => write!(f, "Not Implemented"),
@@ -59,6 +63,12 @@ impl Display for KakError {
                 "Attempted to set selections/selections_desc to empty list"
             ),
         }
+    }
+}
+
+impl From<std::convert::Infallible> for KakError {
+    fn from(_e: std::convert::Infallible) -> Self {
+        Self::NotImplemented("Infallible error encountered")
     }
 }
 
@@ -77,5 +87,11 @@ impl From<shell_words::ParseError> for KakError {
 impl From<ParseIntError> for KakError {
     fn from(e: ParseIntError) -> Self {
         Self::Parse(format!("Could not parse as integer: {e:?}"))
+    }
+}
+
+impl From<std::string::FromUtf8Error> for KakError {
+    fn from(e: std::string::FromUtf8Error) -> Self {
+        Self::Utf8Error(e)
     }
 }

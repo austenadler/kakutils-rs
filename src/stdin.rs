@@ -1,11 +1,14 @@
-use kakplugin::{get_selections_with_desc, set_selections, KakError};
+use kakplugin::{get_selections_with_desc, set_selections_failable, KakError};
 use std::{
+    borrow::Cow,
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
 };
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
+    #[clap()]
     command: String,
+    #[clap(allow_hyphen_values = true)]
     args: Vec<String>,
 }
 pub fn stdin(options: &Options) -> Result<String, KakError> {
@@ -24,18 +27,24 @@ pub fn stdin(options: &Options) -> Result<String, KakError> {
         Ok(())
     });
 
-    set_selections(
+    let set_selections_result = set_selections_failable(
         BufReader::new(child.stdout.take().expect("Failed to get stdout"))
             .split(b'\0')
-            .map(|s| Ok(String::from_utf8_lossy(&s?).into_owned()))
-            .collect::<Result<Vec<_>, KakError>>()?
-            .iter(),
-    )?;
+            // TODO: Support non-utf8?
+            .map(|s| -> Result<_, KakError> { Ok(String::from_utf8(s?)?) }),
+    );
 
     // Wait for the background process to exit
+    // Return its error (if there is one) first
     handle
         .join()
         .map_err(|_e| KakError::Custom("Could not join background process".to_string()))??;
 
-    Ok("stdin selections".into())
+    // Now print any errors
+    let num_set = set_selections_result?;
+
+    Ok(format!(
+        "Set {} selections from {}",
+        num_set, options.command
+    ))
 }

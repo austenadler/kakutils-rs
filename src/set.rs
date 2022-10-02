@@ -1,8 +1,8 @@
 // use crate::utils;
 use clap::ArgEnum;
 use kakplugin::{
-    get_selections, get_selections_with_desc_ordered, set_selections, set_selections_desc,
-    types::Register, KakError, Selection, SelectionWithDesc,
+    get_selections, get_selections_with_desc, set_selections, set_selections_desc, types::Register,
+    KakError, Selection, SelectionWithDesc,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
@@ -156,7 +156,7 @@ fn reduce_selections(
 ) -> Result<(), KakError> {
     // The registers should have been read in a draft context
     // So the current selection will be unmodified
-    let selections_with_desc = get_selections_with_desc_ordered(None)?;
+    let selections_with_desc = get_selections_with_desc(None)?;
 
     set_selections_desc(selections_with_desc.into_iter().filter_map(|swd| {
         // Does not matter if the operation was - or &

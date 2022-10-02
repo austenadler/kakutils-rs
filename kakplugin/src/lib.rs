@@ -56,9 +56,9 @@ where
 //     register: &str,
 // ) -> Result<Vec<SelectionWithSubselections>, KakError> {
 //     // TODO: Escape register
-//     let subselections = get_selections_with_desc()?;
+//     let subselections = get_selections_with_desc_unordered()?;
 //     exec(format!("\"{}z", register.replace('\'', "''")))?;
-//     let selections = get_selections_with_desc()?;
+//     let selections = get_selections_with_desc_unordered()?;
 
 //     for sel in selections {
 //         for i in subselections {}
@@ -73,7 +73,9 @@ where
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to,
 /// or if `selections.len() != selections_desc.len`
-pub fn get_selections_with_desc(keys: Option<&'_ str>) -> Result<Vec<SelectionWithDesc>, KakError> {
+pub fn get_selections_with_desc_unordered(
+    keys: Option<&'_ str>,
+) -> Result<Vec<SelectionWithDesc>, KakError> {
     let mut selections = get_selections(keys)?;
     let selections_desc = get_selections_desc_unordered(keys)?;
 
@@ -118,10 +120,8 @@ pub fn get_selections_with_desc(keys: Option<&'_ str>) -> Result<Vec<SelectionWi
 /// Return a vec of SelectionWithDesc, sorted in file (SelectionDesc) order
 ///
 /// For example, the returned vec's order will be selection 1, 2, then 3 regardless of the primary selection
-pub fn get_selections_with_desc_ordered(
-    keys: Option<&'_ str>,
-) -> Result<Vec<SelectionWithDesc>, KakError> {
-    let mut ret = get_selections_with_desc(keys)?;
+pub fn get_selections_with_desc(keys: Option<&'_ str>) -> Result<Vec<SelectionWithDesc>, KakError> {
+    let mut ret = get_selections_with_desc_unordered(keys)?;
     ret.sort_by_key(|s| s.desc.sort());
     Ok(ret)
 }
@@ -129,10 +129,11 @@ pub fn get_selections_with_desc_ordered(
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn set_selections<'a, I, S: 'a>(selections: I) -> Result<(), KakError>
+pub fn set_selections_failable<'a, I, S: 'a, E>(selections: I) -> Result<usize, KakError>
 where
-    I: IntoIterator<Item = S>,
+    I: IntoIterator<Item = Result<S, E>>,
     S: AsRef<str> + Clone + Display,
+    E: Into<KakError>,
 {
     let mut selections_iter = selections.into_iter().peekable();
     if selections_iter.peek().is_none() {
@@ -140,13 +141,49 @@ where
     }
 
     let mut f = open_command_fifo()?;
+    let mut num_written: usize = 0;
+
     write!(f, "set-register '\"'")?;
     for i in selections_iter {
-        write!(f, " '{}'", escape(i.as_ref()))?;
+        num_written = num_written.saturating_add(1);
+        // eprintln!(
+        //     "Got response: {:?}",
+        //     i.map_err(Into::into)?.clone().as_ref()
+        // );
+        write!(f, " '{}'", escape(i.map_err(Into::into)?.as_ref()))?;
     }
+
     write!(f, "; execute-keys R;")?;
     f.flush()?;
-    Ok(())
+    Ok(num_written)
+}
+
+/// # Errors
+///
+/// Will return `Err` if command fifo could not be opened, read from, or written to
+pub fn set_selections<'a, I, S: 'a>(selections: I) -> Result<usize, KakError>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str> + Clone + Display,
+{
+    set_selections_failable(
+        selections
+            .into_iter()
+            .map(|s| -> Result<_, std::convert::Infallible> { Ok(s) }),
+    )
+    // let mut selections_iter = selections.into_iter().peekable();
+    // if selections_iter.peek().is_none() {
+    //     return Err(KakError::SetEmptySelections);
+    // }
+
+    // let mut f = open_command_fifo()?;
+    // write!(f, "set-register '\"'")?;
+    // for i in selections_iter {
+    //     write!(f, " '{}'", escape(i.as_ref()))?;
+    // }
+    // write!(f, "; execute-keys R;")?;
+    // f.flush()?;
+    // Ok(())
 }
 
 /// # Errors
