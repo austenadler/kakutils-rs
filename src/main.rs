@@ -20,12 +20,11 @@ mod pad;
 mod set;
 mod shuf;
 mod sort;
-mod stdin;
 mod trim;
 mod uniq;
 mod utils;
+mod xargs;
 mod xlookup;
-// mod xargs;
 use clap::{Parser, Subcommand};
 use kakplugin::{display_message, get_var, KakError};
 use std::env;
@@ -62,10 +61,8 @@ enum Commands {
     Trim(trim::Options),
     #[clap(about = "Perform set operations on selections")]
     Set(set::Options),
-    // #[clap(about = "")]
-    // Xargs(xargs::Options),
-    #[clap(about = "Pass each selection null terminated to a command")]
-    Stdin(stdin::Options),
+    #[clap(about = "Pass each selection null terminated to a command", visible_aliases = &["stdin"])]
+    Xargs(xargs::Options),
     #[clap(about = "Make boxes out of selections", visible_aliases = &["square"])]
     Box_(box_::Options),
     #[clap(about = "Map selections based on a register", visible_aliases = &["vlookup"])]
@@ -119,8 +116,7 @@ fn run() -> Result<String, KakError> {
         Commands::Pad(o) => pad::pad(o),
         Commands::Trim(o) => trim::trim(o),
         Commands::Set(o) => set::set(o),
-        // Commands::Xargs(o) => xargs::xargs(o),
-        Commands::Stdin(o) => stdin::stdin(o),
+        Commands::Xargs(o) => xargs::xargs(o),
         Commands::Box_(o) => box_::box_(o),
         Commands::Xlookup(o) => xlookup::xlookup(o),
         Commands::Incr(o) => incr::incr(o, true),
