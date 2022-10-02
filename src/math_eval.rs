@@ -1,6 +1,6 @@
 use evalexpr::{eval, Value};
 use kakplugin::{get_selections, open_command_fifo, set_selections, KakError, Selection};
-use std::io::Write;
+use std::{borrow::Cow, io::Write};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options;
@@ -10,14 +10,14 @@ pub fn math_eval(_options: &Options) -> Result<String, KakError> {
     let selections = get_selections(None)?;
 
     set_selections(selections.iter().map(|s| match eval(s) {
-        Ok(Value::Float(f)) => f.to_string(),
-        Ok(Value::Int(f)) => f.to_string(),
-        Ok(_) => String::from(""),
+        Ok(Value::Float(f)) => Cow::Owned(f.to_string()),
+        Ok(Value::Int(f)) => Cow::Owned(f.to_string()),
+        Ok(_) => Cow::Borrowed(""),
         Err(e) => {
             eprintln!("Error: {:?}", e);
             err_count = err_count.saturating_add(1);
             // Set the selection to empty
-            String::from("")
+            Cow::Borrowed("")
         }
     }))?;
 

@@ -20,24 +20,22 @@ pub struct Options {
 }
 pub fn xlookup(options: &Options) -> Result<String, KakError> {
     let lookup_table = build_lookuptable(options.register)?;
-    eprintln!("Lookup table: {lookup_table:#?}");
 
     let selections = get_selections(None)?;
 
     let mut err_count: usize = 0;
 
     set_selections(selections.iter().map(|key| {
-        match lookup_table.get(&get_hash(&key, false, None, false)) {
-            Some(v) => v.to_string(),
-            None => {
-                eprintln!(
-                    "Nothing for '{key}' ({})",
-                    get_hash(&key, false, None, false)
-                );
-                err_count += 1;
-                String::from("")
-            }
-        }
+        lookup_table
+            .get(&get_hash(key, false, None, false))
+            .map_or_else(
+                || {
+                    eprintln!("Key '{key}' not found",);
+                    err_count += 1;
+                    String::from("")
+                },
+                ToString::to_string,
+            )
     }))?;
 
     Ok(if err_count == 0 {
@@ -52,14 +50,14 @@ pub fn xlookup(options: &Options) -> Result<String, KakError> {
     })
 }
 
-pub fn build_lookuptable(reg: Register) -> Result<BTreeMap<u64, Selection>, KakError> {
-    let mut selections = get_selections(Some(&format!("\"{reg}z")))?;
+fn build_lookuptable(register: Register) -> Result<BTreeMap<u64, Selection>, KakError> {
+    let mut selections = get_selections(Some(&format!("\"{register}z")))?;
     let mut iter = selections.array_chunks_mut();
     let ret = iter.try_fold(BTreeMap::new(), |mut acc, [key, value]| {
-        match acc.entry(get_hash(&key, false, None, false)) {
+        match acc.entry(get_hash(key, false, None, false)) {
             Occupied(_) => Err(KakError::Custom(format!("Duplicate key '{key}'"))),
             Vacant(v) => {
-                v.insert(value.to_owned());
+                v.insert(value.clone());
                 Ok(acc)
             }
         }

@@ -644,7 +644,7 @@ After `shuf`:
 Sort selections by regular expression or content
 
 * `-S`/`--no-skip-whitespace` - Do not treat trimmed value of selections when sorting (by default, surrounding selection whitespace is trimmed before comparison)
-* `-l`/`--lexicographic-sort` - Sort numbers lexicographically (`10 > 2`)
+* `-L`/`--no-lexicographic-sort` - Do not sort numbers lexicographically (`10 < 2` when `-L` is passed)
 * `-r`/`--reverse` - Reverse sorting
 * `-i`/`--ignore-case` - Ignore case when sorting
 * `[REGEX]` - Optional regex comparison key

@@ -3,7 +3,9 @@ pub mod types;
 pub use errors::KakError;
 pub use shell_words::ParseError;
 use std::{
+    borrow::Cow,
     env,
+    fmt::Display,
     fs::{self, File, OpenOptions},
     io::{BufWriter, Write},
     str::FromStr,
@@ -40,7 +42,7 @@ where
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
 // TODO: Use AsRef
-pub fn get_selections_desc_unsorted<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, KakError>
+pub fn get_selections_desc_unordered<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, KakError>
 where
     S: AsRef<str>,
 {
@@ -63,13 +65,17 @@ where
 //     }
 // }
 
+/// Return a vec of SelectionWithDesc. The returned vec is in order according to SelectionDesc
+///
+/// For example, if your primary selection is selection 2 of 3, the returned vec's order will be selection 2, 3, then 1
+///
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to,
 /// or if `selections.len() != selections_desc.len`
 pub fn get_selections_with_desc(keys: Option<&'_ str>) -> Result<Vec<SelectionWithDesc>, KakError> {
     let mut selections = get_selections(keys)?;
-    let selections_desc = get_selections_desc_unsorted(keys)?;
+    let selections_desc = get_selections_desc_unordered(keys)?;
 
     if selections.len() != selections_desc.len() {
         return Err(KakError::KakResponse(format!(
@@ -109,13 +115,24 @@ pub fn get_selections_with_desc(keys: Option<&'_ str>) -> Result<Vec<SelectionWi
         .collect::<Result<Vec<_>, _>>()
 }
 
+/// Return a vec of SelectionWithDesc, sorted in file (SelectionDesc) order
+///
+/// For example, the returned vec's order will be selection 1, 2, then 3 regardless of the primary selection
+pub fn get_selections_with_desc_ordered(
+    keys: Option<&'_ str>,
+) -> Result<Vec<SelectionWithDesc>, KakError> {
+    let mut ret = get_selections_with_desc(keys)?;
+    ret.sort_by_key(|s| s.desc.sort());
+    Ok(ret)
+}
+
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
 pub fn set_selections<'a, I, S: 'a>(selections: I) -> Result<(), KakError>
 where
     I: IntoIterator<Item = S>,
-    S: AsRef<str>,
+    S: AsRef<str> + Clone + Display,
 {
     let mut selections_iter = selections.into_iter().peekable();
     if selections_iter.peek().is_none() {
@@ -125,7 +142,7 @@ where
     let mut f = open_command_fifo()?;
     write!(f, "set-register '\"'")?;
     for i in selections_iter {
-        write!(f, " '{}'", escape(i))?;
+        write!(f, " '{}'", escape(i.as_ref()))?;
     }
     write!(f, "; execute-keys R;")?;
     f.flush()?;
@@ -135,7 +152,7 @@ where
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn set_selections_desc<'a, I, SD: 'a + std::fmt::Display>(selections: I) -> Result<(), KakError>
+pub fn set_selections_desc<'a, I, SD: 'a + Display>(selections: I) -> Result<(), KakError>
 where
     I: IntoIterator<Item = SD>,
     SD: AsRef<SelectionDesc>,
@@ -158,11 +175,11 @@ where
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn display_message<S: AsRef<str>>(
+pub fn display_message<S: AsRef<str> + Clone + Display>(
     message: S,
     debug_message: Option<S>,
 ) -> Result<(), KakError> {
-    let msg_str = escape(message);
+    let msg_str = escape(message.as_ref());
     {
         let mut f = open_command_fifo()?;
 
@@ -170,15 +187,35 @@ pub fn display_message<S: AsRef<str>>(
         write!(f, "echo -debug '{}';", msg_str)?;
 
         if let Some(debug_msg_str) = &debug_message.as_ref() {
-            write!(f, "echo -debug '{}';", escape(debug_msg_str))?;
+            write!(f, "echo -debug '{}';", escape(debug_msg_str.as_ref()))?;
         }
         f.flush()?;
     }
     Ok(())
 }
 
-pub fn escape<S: AsRef<str>>(s: S) -> String {
-    s.as_ref().replace('\'', "''")
+/// Escapes a string to be sent to kak by replacing single tick with two single tics
+///
+/// # Examples
+///
+/// ```
+/// use kakplugin::escape;
+/// use std::borrow::Cow;
+///
+/// assert_eq!(escape("abcd"), "abcd");
+/// assert_eq!(escape("'ab\\cd'"), "''ab\\cd''");
+///
+/// // Will not reallocate for
+/// assert!(matches!(escape("abcd"), Cow::Borrowed(_)));
+/// assert!(matches!(escape("ab\\nc\nd"), Cow::Borrowed(_)));
+/// assert!(matches!(escape("ab'cd"), Cow::Owned(_)));
+/// ```
+pub fn escape(s: &str) -> Cow<str> {
+    if s.contains('\'') {
+        Cow::Owned(s.replace('\'', "''"))
+    } else {
+        Cow::Borrowed(s)
+    }
 }
 
 /// # Errors
@@ -221,7 +258,7 @@ where
     execute-keys '{}';
     echo -quoting shell -to-file {response_fifo} -- {};
 }}"#,
-            escape(keys),
+            escape(keys.as_ref()),
             msg.as_ref()
         ),
     })?;

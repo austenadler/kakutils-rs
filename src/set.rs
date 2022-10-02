@@ -1,8 +1,8 @@
 // use crate::utils;
 use clap::ArgEnum;
 use kakplugin::{
-    get_selections, get_selections_with_desc, set_selections, set_selections_desc, types::Register,
-    KakError, Selection, SelectionWithDesc,
+    get_selections, get_selections_with_desc_ordered, set_selections, set_selections_desc,
+    types::Register, KakError, Selection, SelectionWithDesc,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
@@ -14,6 +14,7 @@ pub struct Options {
     #[clap(
         min_values = 1,
         max_values = 3,
+        allow_hyphen_values = true,
         help = "Register operation and operand. Empty register is current selection. Example: 'a-b' or '+b'"
     )]
     args: Vec<String>,
@@ -114,8 +115,8 @@ pub fn set(options: &Options) -> Result<String, KakError> {
 
     match &operation {
         Operation::Compare => compare(
-            &left_register,
-            &right_register,
+            left_register,
+            right_register,
             &result,
             &left_ordered_counts,
             &right_ordered_counts,
@@ -127,11 +128,11 @@ pub fn set(options: &Options) -> Result<String, KakError> {
             if left_register == Register::Underscore {
                 // If the user asked for an intersection or subtraction from the current selection, we can update selection_descs only
                 // For example (current selection) - (contents of register a) allows us to simply deselect some selections
-                reduce_selections(&options, &result)?
+                reduce_selections(options, &result)?;
             } else {
                 // The user asked for registers that *aren't* the current selection
                 // This means either registers don't represent the current selection, or the current selection is on the other side
-                print_result(&result)?
+                print_result(&result)?;
             }
         }
     }
@@ -148,18 +149,14 @@ pub fn set(options: &Options) -> Result<String, KakError> {
     })
 }
 
-/// Reduces selections to those that are in the key_set_operation_result
+/// Reduces selections to those that are in the `key_set_operation_result`
 fn reduce_selections(
     options: &Options,
     key_set_operation_result: &LinkedHashSet<&Selection>,
 ) -> Result<(), KakError> {
     // The registers should have been read in a draft context
     // So the current selection will be unmodified
-    let selections_with_desc = {
-        let mut r = get_selections_with_desc(None)?;
-        r.sort_by_key(|s| s.desc.sort());
-        r
-    };
+    let selections_with_desc = get_selections_with_desc_ordered(None)?;
 
     set_selections_desc(selections_with_desc.into_iter().filter_map(|swd| {
         // Does not matter if the operation was - or &
@@ -212,8 +209,8 @@ fn print_result(key_set_operation_result: &LinkedHashSet<&Selection>) -> Result<
 }
 
 fn compare(
-    left_register: &Register,
-    right_register: &Register,
+    left_register: Register,
+    right_register: Register,
     key_set_operation_result: &LinkedHashSet<&Selection>,
     left_ordered_counts: &LinkedHashMap<Selection, usize>,
     right_ordered_counts: &LinkedHashMap<Selection, usize>,
@@ -281,10 +278,10 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
         if key.is_empty() {
             // We don't want to even pretend to look at empty keys
             continue;
-        } else {
-            let entry: &mut usize = ret.entry(key).or_insert(0);
-            *entry = entry.saturating_add(1);
         }
+
+        let entry: &mut usize = ret.entry(key).or_insert(0);
+        *entry = entry.saturating_add(1);
     }
     ret
 }

@@ -52,3 +52,45 @@ pub fn get_hash(
 
     hasher.finish()
 }
+
+/// Splits an `&str` into (string_value, trailing_newlines)
+///
+/// # Examples
+///
+/// ```
+/// assert_eq!(split_trailing_newlines("asdf\n"), ("asdf", "\n"));
+/// assert_eq!(split_trailing_newlines("asdf\n\nhjk\n"), ("asdf\n\nhjk", "\n"));
+/// assert_eq!(split_trailing_newlines("asdf"), ("asdf", ""));
+/// assert_eq!(split_trailing_newlines(""), ("", ""));
+/// ```
+pub fn split_trailing_newlines<'a>(s: &'a str) -> (&'a str, &'a str) {
+    s.rfind(|c| c != '\n')
+        .map(|idx| s.split_at(idx + 1))
+        .unwrap_or((s, ""))
+}
+
+/// Splits an `&str` into (leading_newlines, string_value, trailing_newlines)
+///
+/// # Examples
+///
+/// ```
+/// assert_eq!(split_newlines("asdf\n"), ("", "asdf", "\n"));
+/// assert_eq!(split_newlines("asdf\n\nhjk\n"), ("", "asdf\n\nhjk", "\n"));
+/// assert_eq!(split_newlines("\nasdf\n\nhjk\n"), ("\n", "asdf\n\nhjk", "\n"));
+/// assert_eq!(split_newlines("asdf"), ("", "asdf", ""));
+/// assert_eq!(split_newlines("\n\n\nasdf"), ("\n\n\n", "asdf", ""));
+/// assert_eq!(split_newlines(""), ("", "", ""));
+/// ```
+pub fn split_newlines<'a>(s: &'a str) -> (&'a str, &'a str, &'a str) {
+    let (leading_newlines, s) = s
+        .find(|c| c != '\n')
+        .map(|idx| s.split_at(idx))
+        .unwrap_or(("", s));
+
+    let (s, trailing_newlines) = s
+        .rfind(|c| c != '\n')
+        .map(|idx| s.split_at(idx + 1))
+        .unwrap_or((s, ""));
+
+    (leading_newlines, s, trailing_newlines)
+}

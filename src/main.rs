@@ -16,6 +16,7 @@ mod errors;
 mod incr;
 mod invert;
 mod math_eval;
+mod pad;
 mod set;
 mod shuf;
 mod sort;
@@ -55,6 +56,8 @@ enum Commands {
     Invert(invert::Options),
     #[clap(about = "Evaluate selections as a math expression", visible_aliases = &["bc", "eval"])]
     MathEval(math_eval::Options),
+    #[clap(about = "Pad all selections by some specifier")]
+    Pad(pad::Options),
     #[clap(about = "Trim every selection")]
     Trim(trim::Options),
     #[clap(about = "Perform set operations on selections")]
@@ -78,9 +81,8 @@ fn main() {
     let args = env::args().collect::<Vec<_>>();
     eprintln!("Len: {}, args: {:?}", args.len(), args);
     if args.len() >= 2 && args[1] == "shell-script-candidates" {
-        match kakplugin::generate_shell_script_candidates(Commands::VARIANTS) {
-            Err(e) => eprintln!("{e:?}"),
-            Ok(()) => {}
+        if let Err(e) = kakplugin::generate_shell_script_candidates(Commands::VARIANTS) {
+            eprintln!("{e:?}");
         }
         return;
     }
@@ -115,6 +117,7 @@ fn run() -> Result<String, KakError> {
         Commands::Uniq(o) => uniq::uniq(o),
         Commands::Invert(o) => invert::invert(o),
         Commands::MathEval(o) => math_eval::math_eval(o),
+        Commands::Pad(o) => pad::pad(o),
         Commands::Trim(o) => trim::trim(o),
         Commands::Set(o) => set::set(o),
         // Commands::Xargs(o) => xargs::xargs(o),

@@ -42,7 +42,7 @@ pub fn invert(options: &Options) -> Result<String, KakError> {
         get_selections_desc(Some(whole_document_selection_command))?
             .into_iter()
             // dd - The full row selectiondesc, spanning from col 1 to the rightmost col, for every row in the file
-            .map(|dd: SelectionDesc| {
+            .flat_map(|dd: SelectionDesc| {
                 // For every line, if there are selections to subtract, subtract them all
                 match split_selections_desc
                     .binary_search_by(|sd_search| sd_search.0.cmp(&dd.left.row))
@@ -57,7 +57,6 @@ pub fn invert(options: &Options) -> Result<String, KakError> {
                     }
                 }
             })
-            .flatten()
             .collect()
     };
 
@@ -68,11 +67,11 @@ pub fn invert(options: &Options) -> Result<String, KakError> {
     Ok(format!("Inverted {} selections", count_selections))
 }
 
-/// Subtract an iterator of `SelectionDesc`s from a given SelectionDesc
+/// Subtract an iterator of `SelectionDesc`s from a given `SelectionDesc`
 ///
 /// This returns a `Vec` because splitting in the middle can create two `SelectionDesc`s
 ///
-/// * `selection_desc` - The primary SelectionDesc to be subtracted from
+/// * `selection_desc` - The primary `SelectionDesc` to be subtracted from
 /// * `selections_desc_to_subtract` - `Vec` of `SelectionDesc`s from `sd`. Must be an owned `Vec` because it needs to be sorted
 fn subtract_all_selections_desc<SD1, SD2>(
     selection_desc: SD1,
@@ -101,11 +100,11 @@ where
                 // TODO: Replace Just with JustLeft and JustRight?
                 rightmost_selection_desc = sd.as_ref().clone();
             }
-            MaybeSplit::JustTwo(sda, sdb) => {
+            MaybeSplit::JustTwo(selectiondesc_a, selectiondesc_b) => {
                 // There was a split in the middle of the selection
                 // Put the left half into the return vector and keep checking if the right half needs more work
-                ret.push(sda);
-                rightmost_selection_desc = sdb;
+                ret.push(selectiondesc_a);
+                rightmost_selection_desc = selectiondesc_b;
             }
         }
     }

@@ -126,12 +126,12 @@ fn boxed_selections(options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
         .collect::<Vec<SelectionDesc>>())
 }
 
-/// Returns a vec of selections_desc of the intersection of the bounding box and the component rows
+/// Returns a vec of `selections_desc` of the intersection of the bounding box and the component rows
 ///
 /// This function takes a selection desc, and its whole-row split selections (`<a-x><a-s>`).
 /// For each whole-row (col 1 to max col) selection, it finds the intersection between the min col and max col in `selection_desc`
 ///
-/// * `selection_desc` - The base (possibly multiline) selection_desc
+/// * `selection_desc` - The base (possibly multiline) `selection_desc`
 /// * `selections_desc_rows` - Vec of above `selection_desc` split by line (`<a-x><a-s>`)
 fn to_boxed_selections<SD1, SD2>(
     selection_desc: SD1,
@@ -154,7 +154,7 @@ where
 
     selections_desc_rows
         .iter()
-        .map(|split_sd| {
+        .filter_map(|split_sd| {
             // Find the intersection of <row>.<min_col>,<row>.<max_col>
             // If empty, return none. Flatten will not add it to the resulting vec
             split_sd.as_ref().intersect(SelectionDesc {
@@ -168,7 +168,6 @@ where
                 },
             })
         })
-        .flatten()
         .collect()
 }
 

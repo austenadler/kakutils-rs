@@ -1,7 +1,7 @@
 use alphanumeric_sort::compare_str;
 use kakplugin::{self, get_selections_with_desc, open_command_fifo, KakError, SelectionWithDesc};
 use regex::Regex;
-use std::{cmp::Ordering, io::Write};
+use std::{borrow::Cow, cmp::Ordering, io::Write};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
@@ -16,10 +16,11 @@ pub struct Options {
     // TODO: Can we invert a boolean? This name is terrible
     #[clap(short = 'S', long, parse(try_from_str = invert_bool), default_value_t, help = "Do not treat trimmed value of selections when sorting")]
     no_skip_whitespace: bool,
-    #[clap(short, long, help = "Sort numbers lexicographically")]
-    lexicographic_sort: bool,
+    #[clap(short = 'L', long, help = "Do not sort numbers lexicographically")]
+    no_lexicographic_sort: bool,
     #[clap(short, long, help = "Reverse sorting")]
     reverse: bool,
+    // TODO: Allow ignoring case
     #[clap(short, long, help = "Ignore case when sorting")]
     ignore_case: bool,
 }
@@ -37,7 +38,7 @@ struct SortableSelection<'a> {
     /// The content of the selection
     selection: &'a SelectionWithDesc,
     /// The string used to compare the content
-    content_comparison: &'a str,
+    content_comparison: Cow<'a, str>,
     /// Any subselections
     subselections: Vec<&'a str>,
 }
@@ -105,18 +106,17 @@ fn to_sortable_selection<'a, 'b>(
     selection: &'a SelectionWithDesc,
     options: &'b Options,
 ) -> SortableSelection<'a> {
-    if options.no_skip_whitespace {
-        SortableSelection {
-            selection,
-            content_comparison: selection.content.as_str(),
-            subselections: vec![],
-        }
-    } else {
-        SortableSelection {
-            selection,
-            content_comparison: selection.content.as_str().trim(),
-            subselections: vec![],
-        }
+    SortableSelection {
+        selection,
+        // TODO: Properly use Cow
+        content_comparison: crate::utils::get_key(
+            &selection.content,
+            !options.no_skip_whitespace,
+            options.regex.as_ref(),
+            options.ignore_case,
+        )
+        .into(),
+        subselections: vec![],
     }
 }
 
@@ -147,25 +147,31 @@ pub fn sort(options: &Options) -> Result<String, KakError> {
                 .map(|s| to_sortable_selection(s, options))
                 .collect()
         }
-        (Some(regex), None) => {
+        (Some(_regex), None) => {
             // Sort based on the regular expression
             selections
                 .iter()
-                .map(|s| {
-                    let mut sortable_selection = to_sortable_selection(s, options);
-                    if let Some(regex_match) = (|| {
-                        let captures = regex.captures(sortable_selection.content_comparison)?;
-                        captures
-                            .get(1)
-                            .or_else(|| captures.get(0))
-                            .map(|m| m.as_str())
-                    })() {
-                        sortable_selection.content_comparison = regex_match;
-                    }
-
-                    sortable_selection
-                })
+                .map(|s| to_sortable_selection(s, options))
                 .collect()
+
+            // TODO: Figure out if this is fine
+            // selections
+            //     .iter()
+            //     .map(|s| {
+            //         let mut sortable_selection = to_sortable_selection(s, options);
+            //         if let Some(regex_match) = (|| {
+            //             let captures = regex.captures(sortable_selection.content_comparison)?;
+            //             captures
+            //                 .get(1)
+            //                 .or_else(|| captures.get(0))
+            //                 .map(|m| m.as_str())
+            //         })() {
+            //             sortable_selection.content_comparison = regex_match;
+            //         }
+
+            //         sortable_selection
+            //     })
+            //     .collect()
         }
         (None, _) => {
             // Sort based on subselections
@@ -178,22 +184,23 @@ pub fn sort(options: &Options) -> Result<String, KakError> {
     zipped.sort_by(|a, b| {
         // First, try sorting by subselection. This won't iterate anything if either is None (regex and default mode)
         for (a_subselection, b_subselection) in a.subselections.iter().zip(b.subselections.iter()) {
-            let comparison = if options.lexicographic_sort {
+            let comparison = if options.no_lexicographic_sort {
                 a_subselection.cmp(b_subselection)
             } else {
-                compare_str(a_subselection, b_subselection)
+                compare_str(&a_subselection, &b_subselection)
             };
-            match comparison {
-                Ordering::Less | Ordering::Greater => return comparison,
-                Ordering::Equal => {}
+
+            // If the comparison is not equal, stop here
+            if comparison != Ordering::Equal {
+                return comparison;
             }
         }
 
         // Otherwise, default to comparing the content
-        if options.lexicographic_sort {
-            a.content_comparison.cmp(b.content_comparison)
+        if options.no_lexicographic_sort {
+            a.content_comparison.cmp(&b.content_comparison)
         } else {
-            compare_str(a.content_comparison, b.content_comparison)
+            compare_str(&a.content_comparison, &b.content_comparison)
         }
     });
 

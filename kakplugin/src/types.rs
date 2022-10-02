@@ -91,14 +91,14 @@ impl SelectionDesc {
         if self.left < self.right {
             // left anchor is first
             Self {
-                left: self.left.clone(),
-                right: self.right.clone(),
+                left: self.left,
+                right: self.right,
             }
         } else {
             // right anchor is first
             Self {
-                left: self.right.clone(),
-                right: self.left.clone(),
+                left: self.right,
+                right: self.left,
             }
         }
     }
@@ -269,15 +269,15 @@ impl From<&SelectionDesc> for SelectionDesc {
 impl From<&AnchorPosition> for SelectionDesc {
     fn from(ap: &AnchorPosition) -> Self {
         Self {
-            left: ap.clone(),
-            right: ap.clone(),
+            left: *ap,
+            right: *ap,
         }
     }
 }
 
 impl AsRef<SelectionDesc> for SelectionDesc {
     fn as_ref(&self) -> &Self {
-        &self
+        self
     }
 }
 
@@ -592,7 +592,7 @@ impl Register {
 
 impl AsRef<Register> for Register {
     fn as_ref(&self) -> &Self {
-        &self
+        self
     }
 }
 
