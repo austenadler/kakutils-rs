@@ -1,12 +1,11 @@
 // use crate::utils;
 use kakplugin::{
     get_selections, get_selections_with_desc, set_selections_desc, types::Register, KakError,
-    Selection,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
 use regex::Regex;
-use std::{io::Write, str::FromStr};
+use std::{borrow::Cow, io::Write, str::FromStr};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
@@ -65,7 +64,7 @@ impl FromStr for Operation {
     }
 }
 
-pub fn set(options: &Options) -> Result<String, KakError> {
+pub fn set<'sel>(options: &'_ Options) -> Result<String, KakError> {
     // Get the actual operation we are performing
     let (left_register, operation, right_register) = parse_arguments(&options.args[..])?;
 
@@ -95,63 +94,72 @@ pub fn set(options: &Options) -> Result<String, KakError> {
     // Get the frequency of each selection. The count does not matter as much as presence
     // Count is used only for compare
     let (left_ordered_counts, right_ordered_counts) = (
-        to_ordered_counts(options, left_selections),
-        to_ordered_counts(options, right_selections),
+        to_ordered_counts(
+            options,
+            left_selections.iter().map(|s| s.as_ref()).collect(),
+        ),
+        to_ordered_counts(
+            options,
+            right_selections.iter().map(|s| s.as_ref()).collect(),
+        ),
     );
 
     // Get an ordered set of every key for each register
     let (left_keys, right_keys) = (
         left_ordered_counts
             .keys()
-            .collect::<LinkedHashSet<&Selection>>(),
+            .map(|k| -> &str { k.as_ref() })
+            .collect::<LinkedHashSet<&str>>(),
         right_ordered_counts
             .keys()
-            .collect::<LinkedHashSet<&Selection>>(),
+            .map(|k| -> &str { k.as_ref() })
+            .collect::<LinkedHashSet<&str>>(),
     );
 
     // Run the actual set operation
     let result = key_set_operation(&operation, &left_keys, &right_keys);
+    let num_modified = result.len();
 
     match &operation {
         Operation::Compare => compare(
             left_register,
             right_register,
-            &result,
+            result,
             &left_ordered_counts,
             &right_ordered_counts,
         )?,
-        Operation::Union => print_result(&result)?,
+        Operation::Union => print_result(result)?,
         // Intersect/subtract will have at most the number of elements in the current selection
         // If the user operated on the current selection, and we can modify the selection descs inplace, do it
         Operation::Intersect | Operation::Subtract => {
             if left_register == Register::Underscore {
                 // If the user asked for an intersection or subtraction from the current selection, we can update selection_descs only
                 // For example (current selection) - (contents of register a) allows us to simply deselect some selections
-                reduce_selections(options, &result)?;
+                reduce_selections(options, result)?;
             } else {
                 // The user asked for registers that *aren't* the current selection
                 // This means either registers don't represent the current selection, or the current selection is on the other side
-                print_result(&result)?;
+                print_result(result)?;
             }
         }
     }
 
     Ok(match &operation {
-        Operation::Compare => format!("Compared {} selections", result.len()),
+        Operation::Compare => format!("Compared {} selections", num_modified),
         op => format!(
             "{}{}{} returned {} selections",
             left_register.to_char(),
             op.to_char(),
             right_register.to_char(),
-            result.len()
+            num_modified
         ),
     })
 }
 
 /// Reduces selections to those that are in the `key_set_operation_result`
-fn reduce_selections(
+fn reduce_selections<'sel, 'a>(
     options: &Options,
-    key_set_operation_result: &LinkedHashSet<&Selection>,
+    key_set_operation_result: LinkedHashSet<&'sel str>,
 ) -> Result<(), KakError> {
     // The registers should have been read in a draft context
     // So the current selection will be unmodified
@@ -168,8 +176,7 @@ fn reduce_selections(
             options.ignore_case,
         );
 
-        // TODO: Do not allocate
-        if key_set_operation_result.contains(&key.into_owned()) {
+        if key_set_operation_result.contains(key.as_ref()) {
             Some(swd.desc)
         } else {
             None
@@ -179,7 +186,7 @@ fn reduce_selections(
     Ok(())
 }
 
-fn print_result(key_set_operation_result: &LinkedHashSet<&Selection>) -> Result<(), KakError> {
+fn print_result(key_set_operation_result: LinkedHashSet<&str>) -> Result<(), KakError> {
     // Manually set selections so we don't have to allocate a string
     let mut f = kakplugin::open_command_fifo()?;
 
@@ -208,12 +215,12 @@ fn print_result(key_set_operation_result: &LinkedHashSet<&Selection>) -> Result<
     Ok(())
 }
 
-fn compare(
+fn compare<'sel, 'a, 'b>(
     left_register: Register,
     right_register: Register,
-    key_set_operation_result: &LinkedHashSet<&Selection>,
-    left_ordered_counts: &LinkedHashMap<Selection, usize>,
-    right_ordered_counts: &LinkedHashMap<Selection, usize>,
+    key_set_operation_result: LinkedHashSet<&'b str>,
+    left_ordered_counts: &'b LinkedHashMap<Cow<'sel, str>, usize>,
+    right_ordered_counts: &'b LinkedHashMap<Cow<'sel, str>, usize>,
 ) -> Result<(), KakError> {
     // Manually set selections so we don't have to allocate a string
     let mut f = kakplugin::open_command_fifo()?;
@@ -264,12 +271,14 @@ fn compare(
     Ok(())
 }
 
-fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<Selection, usize> {
+fn to_ordered_counts<'sel>(
+    options: &Options,
+    sels: Vec<&'sel str>,
+) -> LinkedHashMap<Cow<'sel, str>, usize> {
     let mut ret = LinkedHashMap::new();
 
     for i in sels {
         let key = crate::utils::get_key(
-            // TODO: Do not allocate
             &i,
             options.skip_whitespace,
             options.regex.as_ref(),
@@ -282,7 +291,7 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
         }
 
         // TODO: Do not allocate
-        let entry: &mut usize = ret.entry(key.into_owned()).or_insert(0);
+        let entry: &mut usize = ret.entry(key).or_insert(0);
         *entry = entry.saturating_add(1);
     }
     ret
@@ -292,11 +301,11 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
 /// * `operation` - The operation to perform
 /// * `left_keys` - The set on the left side of the operator
 /// * `right_keys` - The set on the right side of the operator
-fn key_set_operation<'a>(
+fn key_set_operation<'sel>(
     operation: &Operation,
-    left_keys: &LinkedHashSet<&'a Selection>,
-    right_keys: &LinkedHashSet<&'a Selection>,
-) -> LinkedHashSet<&'a Selection> {
+    left_keys: &LinkedHashSet<&'sel str>,
+    right_keys: &LinkedHashSet<&'sel str>,
+) -> LinkedHashSet<&'sel str> {
     match operation {
         Operation::Intersect => left_keys
             .intersection(right_keys)
