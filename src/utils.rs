@@ -1,56 +1,74 @@
-use kakplugin::Selection;
+// use kakplugin::Selection;
 use regex::Regex;
 use std::{
+    borrow::{Borrow, Cow},
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
 };
 
-pub fn get_key(
-    // TODO: Use Cow
-    selection: &Selection,
-    skip_whitespace: bool,
+/// Gets a key out of a selection
+///
+/// # Examples
+///
+/// ```
+/// assert_eq!(get_key("  asdf\n", false, None, false), "asdf\n");
+/// assert_eq!(get_key("  asdf\n", true, None, false), "  asdf\n");
+/// assert_eq!(get_key("  as1f\n", false, Some("\w+"), false), "as");
+/// assert_eq!(get_key("  aS1F\n", false, Some("\w+"), true), "as1f");
+/// ```
+pub fn get_key<'sel>(
+    selection: &'sel str,
+    preserve_whitespace: bool,
     regex: Option<&Regex>,
     ignore_case: bool,
-) -> String {
+) -> Cow<'sel, str> {
     // Strip whitespace if requested
-    let mut key = if skip_whitespace {
-        selection.as_str()
+    let mut key = if preserve_whitespace {
+        // TODO: Does this need to be swapped?
+        selection
     } else {
         selection.trim()
     };
 
     // If they requested a regex match, set the key to the string slice of that match
     if let Some(regex_match) = (|| {
-        let captures = regex.as_ref()?.captures(key)?;
+        // let captures = regex.as_ref()?.captures(&key)?;
+        let captures = regex.as_ref()?.captures(key.borrow())?;
         captures
             .get(1)
             .or_else(|| captures.get(0))
             .map(|m| m.as_str())
     })() {
         key = regex_match;
+        // Cow::Borrowed(regex_match)
     }
 
     // Ignore case if requested
-    // Lowercase at the end to not mangle regex
     if ignore_case {
-        key.to_lowercase()
+        // Lowercase at the end to not mangle regex
+        // TODO: Do not allocate if it is already lowercased
+        // Need to_lowercase(&self) -> Cow<str>
+        if !key.as_bytes().iter().any(u8::is_ascii_uppercase) {
+            Cow::Borrowed(key)
+        } else {
+            Cow::Owned(key.to_ascii_lowercase())
+        }
     } else {
-        // TODO: Do not perform an allocation here
-        key.to_string()
+        Cow::Borrowed(key)
     }
 }
 
 /// Get a key out of a selection based on options
 pub fn get_hash(
     // TODO: Accept any Into<AsRef<Selection>>
-    selection: &Selection,
-    skip_whitespace: bool,
+    selection: &str,
+    preserve_whitespace: bool,
     regex: Option<&Regex>,
     ignore_case: bool,
 ) -> u64 {
     let mut hasher = DefaultHasher::new();
 
-    get_key(selection, skip_whitespace, regex, ignore_case).hash(&mut hasher);
+    get_key(&selection, preserve_whitespace, regex, ignore_case).hash(&mut hasher);
 
     hasher.finish()
 }

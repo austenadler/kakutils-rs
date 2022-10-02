@@ -168,7 +168,8 @@ fn reduce_selections(
             options.ignore_case,
         );
 
-        if key_set_operation_result.contains(&key) {
+        // TODO: Do not allocate
+        if key_set_operation_result.contains(&key.into_owned()) {
             Some(swd.desc)
         } else {
             None
@@ -268,6 +269,7 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
 
     for i in sels {
         let key = crate::utils::get_key(
+            // TODO: Do not allocate
             &i,
             options.skip_whitespace,
             options.regex.as_ref(),
@@ -279,7 +281,8 @@ fn to_ordered_counts(options: &Options, sels: Vec<Selection>) -> LinkedHashMap<S
             continue;
         }
 
-        let entry: &mut usize = ret.entry(key).or_insert(0);
+        // TODO: Do not allocate
+        let entry: &mut usize = ret.entry(key.into_owned()).or_insert(0);
         *entry = entry.saturating_add(1);
     }
     ret

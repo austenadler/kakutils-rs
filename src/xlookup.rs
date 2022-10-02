@@ -22,7 +22,7 @@ pub fn xlookup(options: &Options) -> Result<String, KakError> {
 
     set_selections(selections.iter().map(|key| {
         lookup_table
-            .get(&get_hash(key, false, None, false))
+            .get(&get_hash(&key, false, None, false))
             .map_or_else(
                 || {
                     eprintln!("Key '{key}' not found",);
@@ -48,7 +48,7 @@ pub fn xlookup(options: &Options) -> Result<String, KakError> {
 fn build_lookuptable(mut selections: Vec<Selection>) -> Result<BTreeMap<u64, Selection>, KakError> {
     let mut iter = selections.array_chunks_mut();
     let ret = iter.try_fold(BTreeMap::new(), |mut acc, [key, value]| {
-        match acc.entry(get_hash(key, false, None, false)) {
+        match acc.entry(get_hash(&key, false, None, false)) {
             Occupied(_) => Err(KakError::Custom(format!("Duplicate key '{key}'"))),
             Vacant(v) => {
                 v.insert(value.clone());
@@ -76,7 +76,7 @@ mod tests {
     }
     macro_rules! hsh {
         ($expr:expr) => {
-            get_hash(&$expr.to_string(), false, None, false)
+            get_hash($expr, false, None, false)
         };
     }
     #[test]
