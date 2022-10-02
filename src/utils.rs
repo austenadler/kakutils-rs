@@ -41,6 +41,7 @@ pub fn get_key(
 
 /// Get a key out of a selection based on options
 pub fn get_hash(
+    // TODO: Accept any Into<AsRef<Selection>>
     selection: &Selection,
     skip_whitespace: bool,
     regex: Option<&Regex>,
