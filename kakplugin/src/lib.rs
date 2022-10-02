@@ -25,7 +25,6 @@ pub fn get_selections(keys: Option<&'_ str>) -> Result<Vec<Selection>, KakError>
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-// TODO: Use AsRef
 pub fn get_selections_desc<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, KakError>
 where
     S: AsRef<str>,
@@ -41,7 +40,6 @@ where
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-// TODO: Use AsRef
 pub fn get_selections_desc_unordered<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, KakError>
 where
     S: AsRef<str>,

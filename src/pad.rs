@@ -1,7 +1,6 @@
 use crate::utils::split_newlines;
-use evalexpr::{eval, Value};
-use kakplugin::{get_selections, open_command_fifo, set_selections, KakError, Selection};
-use std::{borrow::Cow, io::Write};
+use kakplugin::{get_selections, set_selections, KakError};
+use std::borrow::Cow;
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
@@ -35,7 +34,7 @@ pub fn pad(options: &Options) -> Result<String, KakError> {
             Some(len) => {
                 num_padded += 1;
                 let fill = options.fill.to_string().repeat(len);
-                let mut ret = leading_newlines.to_string();
+                let mut ret = (*leading_newlines).to_string();
                 if options.right {
                     ret.push_str(s);
                     ret.push_str(&fill);

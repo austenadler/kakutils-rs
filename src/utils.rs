@@ -6,6 +6,7 @@ use std::{
 };
 
 pub fn get_key(
+    // TODO: Use Cow
     selection: &Selection,
     skip_whitespace: bool,
     regex: Option<&Regex>,
@@ -54,23 +55,7 @@ pub fn get_hash(
     hasher.finish()
 }
 
-/// Splits an `&str` into (string_value, trailing_newlines)
-///
-/// # Examples
-///
-/// ```
-/// assert_eq!(split_trailing_newlines("asdf\n"), ("asdf", "\n"));
-/// assert_eq!(split_trailing_newlines("asdf\n\nhjk\n"), ("asdf\n\nhjk", "\n"));
-/// assert_eq!(split_trailing_newlines("asdf"), ("asdf", ""));
-/// assert_eq!(split_trailing_newlines(""), ("", ""));
-/// ```
-pub fn split_trailing_newlines<'a>(s: &'a str) -> (&'a str, &'a str) {
-    s.rfind(|c| c != '\n')
-        .map(|idx| s.split_at(idx + 1))
-        .unwrap_or((s, ""))
-}
-
-/// Splits an `&str` into (leading_newlines, string_value, trailing_newlines)
+/// Splits an `&str` into (`leading_newlines`, `string_value`, `trailing_newlines`)
 ///
 /// # Examples
 ///
@@ -82,16 +67,12 @@ pub fn split_trailing_newlines<'a>(s: &'a str) -> (&'a str, &'a str) {
 /// assert_eq!(split_newlines("\n\n\nasdf"), ("\n\n\n", "asdf", ""));
 /// assert_eq!(split_newlines(""), ("", "", ""));
 /// ```
-pub fn split_newlines<'a>(s: &'a str) -> (&'a str, &'a str, &'a str) {
-    let (leading_newlines, s) = s
-        .find(|c| c != '\n')
-        .map(|idx| s.split_at(idx))
-        .unwrap_or(("", s));
+pub fn split_newlines(s: &'_ str) -> (&'_ str, &'_ str, &'_ str) {
+    let (leading_newlines, s) = s.find(|c| c != '\n').map_or(("", s), |idx| s.split_at(idx));
 
     let (s, trailing_newlines) = s
         .rfind(|c| c != '\n')
-        .map(|idx| s.split_at(idx + 1))
-        .unwrap_or((s, ""));
+        .map_or((s, ""), |idx| s.split_at(idx + 1));
 
     (leading_newlines, s, trailing_newlines)
 }

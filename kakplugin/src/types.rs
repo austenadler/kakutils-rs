@@ -163,8 +163,6 @@ impl SelectionDesc {
         match (b.contains(&a.left), b.contains(&a.right), a.contains(&b)) {
             (false, false, false) => {
                 // There is no intersection
-                // TODO: Do the weird boundary ones
-                // None
                 if a.right.row == b.left.row && a.right.col == b.left.col.saturating_sub(1) {
                     Some(Self {
                         left: a.left,

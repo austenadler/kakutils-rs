@@ -1,13 +1,12 @@
 // use crate::utils;
-use clap::ArgEnum;
 use kakplugin::{
-    get_selections, get_selections_with_desc, set_selections, set_selections_desc, types::Register,
-    KakError, Selection, SelectionWithDesc,
+    get_selections, get_selections_with_desc, set_selections_desc, types::Register, KakError,
+    Selection,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
 use regex::Regex;
-use std::{collections::HashSet, io::Write, str::FromStr};
+use std::{io::Write, str::FromStr};
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
@@ -299,22 +298,16 @@ fn key_set_operation<'a>(
         Operation::Intersect => left_keys
             .intersection(right_keys)
             // .into_iter()
-            // TODO: Remove this
             .copied()
             .collect(),
         Operation::Subtract => left_keys
             .difference(right_keys)
             .into_iter()
-            // TODO: Remove this
             .copied()
             .collect(),
-        Operation::Compare | Operation::Union => left_keys
-            .union(right_keys)
-            .into_iter()
-            // TODO: Remove this
-            .copied()
-            .collect(),
-        // TODO: Symmetric difference?
+        Operation::Compare | Operation::Union => {
+            left_keys.union(right_keys).into_iter().copied().collect()
+        } // TODO: Symmetric difference?
     }
 }
 

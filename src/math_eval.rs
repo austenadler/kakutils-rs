@@ -1,6 +1,6 @@
 use evalexpr::{eval, Value};
-use kakplugin::{get_selections, open_command_fifo, set_selections, KakError, Selection};
-use std::{borrow::Cow, io::Write};
+use kakplugin::{get_selections, set_selections, KakError};
+use std::borrow::Cow;
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options;

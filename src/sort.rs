@@ -20,7 +20,6 @@ pub struct Options {
     no_lexicographic_sort: bool,
     #[clap(short, long, help = "Reverse sorting")]
     reverse: bool,
-    // TODO: Allow ignoring case
     #[clap(short, long, help = "Ignore case when sorting")]
     ignore_case: bool,
 }

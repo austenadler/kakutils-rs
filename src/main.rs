@@ -5,8 +5,6 @@
 // Cannot be fixed
 #![allow(clippy::multiple_crate_versions)]
 #![allow(clippy::struct_excessive_bools)]
-// TODO: Remove
-#![allow(dead_code, unused_imports)]
 #![feature(slice_group_by)]
 #![feature(slice_take)]
 #![feature(array_chunks)]

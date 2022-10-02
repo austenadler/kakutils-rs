@@ -1,6 +1,5 @@
 use kakplugin::{get_selections_with_desc, set_selections_failable, KakError};
 use std::{
-    borrow::Cow,
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
 };

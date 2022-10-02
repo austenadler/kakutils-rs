@@ -1,8 +1,6 @@
 use kakplugin::{
-    get_selections_desc, set_selections_desc, types::MaybeSplit, AnchorPosition, KakError,
-    SelectionDesc,
+    get_selections_desc, set_selections_desc, types::MaybeSplit, KakError, SelectionDesc,
 };
-use std::{fs, str::FromStr};
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
     #[clap(short, long, help = "Do not include newlines")]

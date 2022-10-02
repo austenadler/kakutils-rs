@@ -1,18 +1,11 @@
 use crate::utils::get_hash;
-use evalexpr::{eval, Value};
-use kakplugin::{
-    get_selections, open_command_fifo, response, set_selections, types::Register, KakError,
-    Selection,
-};
+use kakplugin::{get_selections, set_selections, types::Register, KakError, Selection};
 use std::{
     borrow::Cow,
     collections::{
         btree_map::Entry::{Occupied, Vacant},
-        hash_map::DefaultHasher,
         BTreeMap,
     },
-    hash::{Hash, Hasher},
-    io::Write,
 };
 
 #[derive(clap::StructOpt, Debug)]
