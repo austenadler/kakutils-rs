@@ -5,6 +5,7 @@ use kakplugin::{
     Selection,
 };
 use std::{
+    borrow::Cow,
     collections::{
         btree_map::Entry::{Occupied, Vacant},
         hash_map::DefaultHasher,
@@ -33,9 +34,9 @@ pub fn xlookup(options: &Options) -> Result<String, KakError> {
                 || {
                     eprintln!("Key '{key}' not found",);
                     err_count += 1;
-                    String::from("")
+                    Cow::Borrowed("")
                 },
-                ToString::to_string,
+                |s| Cow::Owned(ToString::to_string(s)),
             )
     }))?;
 
