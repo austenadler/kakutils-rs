@@ -317,3 +317,7 @@ where
 
     Ok(())
 }
+
+pub fn reg(register: Register, keys: Option<&'_ str>) -> Result<Vec<String>, KakError> {
+    response(format!("%reg{{{}}}", register.kak_expanded()), keys)
+}

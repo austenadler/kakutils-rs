@@ -1,7 +1,8 @@
 use crate::utils::get_hash;
 use evalexpr::{eval, Value};
 use kakplugin::{
-    get_selections, open_command_fifo, set_selections, types::Register, KakError, Selection,
+    get_selections, open_command_fifo, response, set_selections, types::Register, KakError,
+    Selection,
 };
 use std::{
     collections::{
@@ -15,11 +16,11 @@ use std::{
 
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
-    #[clap(help = "Register with the lookup table")]
+    #[clap(help = "Register with the lookup table", default_value = "\"")]
     register: Register,
 }
 pub fn xlookup(options: &Options) -> Result<String, KakError> {
-    let lookup_table = build_lookuptable(options.register)?;
+    let lookup_table = build_lookuptable(kakplugin::reg(options.register, None)?)?;
 
     let selections = get_selections(None)?;
 
@@ -50,8 +51,7 @@ pub fn xlookup(options: &Options) -> Result<String, KakError> {
     })
 }
 
-fn build_lookuptable(register: Register) -> Result<BTreeMap<u64, Selection>, KakError> {
-    let mut selections = get_selections(Some(&format!("\"{register}z")))?;
+fn build_lookuptable(mut selections: Vec<Selection>) -> Result<BTreeMap<u64, Selection>, KakError> {
     let mut iter = selections.array_chunks_mut();
     let ret = iter.try_fold(BTreeMap::new(), |mut acc, [key, value]| {
         match acc.entry(get_hash(key, false, None, false)) {
@@ -69,5 +69,34 @@ fn build_lookuptable(register: Register) -> Result<BTreeMap<u64, Selection>, Kak
         Err(KakError::CustomStatic("No selections"))
     } else {
         Ok(ret)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    macro_rules! blt {
+        ($($x:expr),+ $(,)?) => {
+            build_lookuptable(vec![$($x.to_string()),+])
+        }
+    }
+    macro_rules! hsh {
+        ($expr:expr) => {
+            get_hash(&$expr.to_string(), false, None, false)
+        };
+    }
+    #[test]
+    fn test_build_lookuptable() {
+        // Must be an even number
+        assert!(blt!["1", "b", "c"].is_err());
+        // Duplicate key
+        assert!(blt!["1", "b", "2", "c", "2", "d"].is_err());
+        // Valid
+        assert!(blt!["1", "b", "2", "c"].is_ok());
+
+        let lt = blt!["1", "b", "2", "c"].unwrap();
+        assert_eq!(lt.get(&hsh!("1")), Some(&String::from("b")));
+        assert_eq!(lt.get(&hsh!("2")), Some(&String::from("c")));
+        assert_eq!(lt.get(&hsh!("3")), None);
     }
 }
