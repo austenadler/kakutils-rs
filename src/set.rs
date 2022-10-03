@@ -1,6 +1,6 @@
 // use crate::utils;
 use kakplugin::{
-    get_selections, get_selections_with_desc, set_selections_desc, types::Register, KakError,
+    get_selections, get_selections_with_desc, reg, set_selections_desc, types::Register, KakError,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
@@ -75,19 +75,19 @@ pub fn set<'sel>(options: &'_ Options) -> Result<String, KakError> {
     let (left_selections, right_selections) = match (&left_register, &right_register) {
         (Register::Underscore, r) => {
             let l_selections = get_selections(None)?;
-            let r_selections = get_selections(Some(&format!("\"{r}z")))?;
+            let r_selections = reg(*r, None)?;
 
             (l_selections, r_selections)
         }
         (l, Register::Underscore) => {
             let r_selections = get_selections(None)?;
-            let l_selections = get_selections(Some(&format!("\"{l}z")))?;
+            let l_selections = reg(*l, None)?;
 
             (l_selections, r_selections)
         }
         (l, r) => {
-            let l_selections = get_selections(Some(&format!("\"{l}z")))?;
-            let r_selections = get_selections(Some(&format!("\"{r}z")))?;
+            let l_selections = reg(*l, None)?;
+            let r_selections = reg(*r, None)?;
 
             (l_selections, r_selections)
         }
@@ -189,7 +189,6 @@ fn reduce_selections<'sel, 'a>(
 }
 
 /// Writes the result of a set operation to a new kak buffer
-
 fn print_result(key_set_operation_result: LinkedHashSet<&str>) -> Result<(), KakError> {
     // Manually set selections so we don't have to allocate a string
     let mut f = kakplugin::open_command_fifo()?;
