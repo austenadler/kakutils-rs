@@ -7,6 +7,8 @@ use linked_hash_set::LinkedHashSet;
 use regex::Regex;
 use std::{borrow::Cow, io::Write, str::FromStr};
 
+const KAK_BUFFER_NAME: &str = "*kakplugin-set*";
+
 #[derive(clap::StructOpt, Debug)]
 pub struct Options {
     #[clap(
@@ -186,6 +188,8 @@ fn reduce_selections<'sel, 'a>(
     Ok(())
 }
 
+/// Writes the result of a set operation to a new kak buffer
+
 fn print_result(key_set_operation_result: LinkedHashSet<&str>) -> Result<(), KakError> {
     // Manually set selections so we don't have to allocate a string
     let mut f = kakplugin::open_command_fifo()?;
@@ -205,9 +209,10 @@ fn print_result(key_set_operation_result: LinkedHashSet<&str>) -> Result<(), Kak
     write!(
         f,
         r#";
-            edit -scratch '*kakplugin-set*';
+            edit -scratch '{}';
             execute-keys '%<a-R>_';
-        }}"#
+        }}"#,
+        KAK_BUFFER_NAME
     )?;
 
     f.flush()?;
@@ -215,6 +220,13 @@ fn print_result(key_set_operation_result: LinkedHashSet<&str>) -> Result<(), Kak
     Ok(())
 }
 
+/// Writes a comparison table to a new kak buffer
+///
+/// * `left_register` - Register of the left side
+/// * `right_register` - Register of the right side
+/// * `key_set_operation_result` - Set of selections after chosen operation
+/// * `left_ordered_counts` - Map of ordered counts on `get_key` to frequency on the left side
+/// * `right_ordered_counts` - Map of ordered counts on `get_key` to frequency on the right side
 fn compare<'sel, 'a, 'b>(
     left_register: Register,
     right_register: Register,
@@ -261,9 +273,10 @@ fn compare<'sel, 'a, 'b>(
     write!(
         f,
         r#";
-            edit -scratch '*kakplugin-set*';
+            edit -scratch '{}';
             execute-keys '%<a-R><a-;>3<a-W>L)<a-space>_vb';
-        }}"#
+        }}"#,
+        KAK_BUFFER_NAME
     )?;
 
     f.flush()?;
@@ -271,13 +284,18 @@ fn compare<'sel, 'a, 'b>(
     Ok(())
 }
 
+/// Counts frequency of unique selection contents, while preserving document order using a `LinkedHashMap`
+///
+/// # Returns
+///
+/// `LinkedHashMap` ordered by document order with `get_key(selection, ...)` as key and frequency of selection
 fn to_ordered_counts<'sel>(
     options: &Options,
-    sels: Vec<&'sel str>,
+    selections: Vec<&'sel str>,
 ) -> LinkedHashMap<Cow<'sel, str>, usize> {
     let mut ret = LinkedHashMap::new();
 
-    for i in sels {
+    for i in selections {
         let key = crate::utils::get_key(
             &i,
             options.skip_whitespace,
@@ -290,7 +308,6 @@ fn to_ordered_counts<'sel>(
             continue;
         }
 
-        // TODO: Do not allocate
         let entry: &mut usize = ret.entry(key).or_insert(0);
         *entry = entry.saturating_add(1);
     }
@@ -312,14 +329,8 @@ fn key_set_operation<'sel>(
             // .into_iter()
             .copied()
             .collect(),
-        Operation::Subtract => left_keys
-            .difference(right_keys)
-            .into_iter()
-            .copied()
-            .collect(),
-        Operation::Compare | Operation::Union => {
-            left_keys.union(right_keys).into_iter().copied().collect()
-        } // TODO: Symmetric difference?
+        Operation::Subtract => left_keys.difference(right_keys).copied().collect(),
+        Operation::Compare | Operation::Union => left_keys.union(right_keys).copied().collect(), // TODO: Symmetric difference?
     }
 }
 
