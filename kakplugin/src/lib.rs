@@ -281,13 +281,13 @@ where
 
     cmd(match keys.as_ref() {
         None => format!(
-            "echo -quoting shell -to-file {response_fifo} -- {}",
+            "echo -quoting shell -to-file '{response_fifo}' -- {}",
             msg.as_ref()
         ),
         Some(keys) => format!(
             r#"evaluate-commands -draft %{{
     execute-keys '{}';
-    echo -quoting shell -to-file {response_fifo} -- {};
+    echo -quoting shell -to-file '{response_fifo}' -- {};
 }}"#,
             escape(keys.as_ref()),
             msg.as_ref()
