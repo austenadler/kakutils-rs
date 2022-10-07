@@ -1,3 +1,4 @@
+use crate::Register;
 use std::{fmt, fmt::Display, num::ParseIntError};
 
 #[derive(Debug)]
@@ -22,6 +23,8 @@ pub enum KakError {
     CustomStatic(&'static str),
     /// The selections/selections_desc list passed was empty
     SetEmptySelections,
+    /// The register register has no content
+    EmptyRegister(Register),
 }
 
 impl std::error::Error for KakError {}
@@ -40,6 +43,9 @@ impl KakError {
             Self::CustomStatic(s) => s.to_string(),
             Self::SetEmptySelections => {
                 String::from("Attempted to set selections/selections_desc to empty list")
+            }
+            Self::EmptyRegister(r) => {
+                format!("Empty register: {r}")
             }
         }
     }
@@ -62,6 +68,7 @@ impl Display for KakError {
                 f,
                 "Attempted to set selections/selections_desc to empty list"
             ),
+            Self::EmptyRegister(r) => write!(f, "Register {r} has no content"),
         }
     }
 }

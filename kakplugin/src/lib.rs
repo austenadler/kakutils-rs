@@ -354,5 +354,12 @@ where
 }
 
 pub fn reg(register: Register, keys: Option<&'_ str>) -> Result<Vec<String>, KakError> {
-    response(format!("%reg{{{}}}", register.kak_expanded()), keys)
+    let ret = response(format!("%reg{{{}}}", register.kak_expanded()), keys)?;
+
+    // Kak returns a single empty line
+    if &ret[..] == [""] {
+        return Err(KakError::EmptyRegister(register));
+    }
+
+    Ok(ret)
 }
