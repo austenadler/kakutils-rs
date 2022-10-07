@@ -144,10 +144,6 @@ where
     write!(f, "set-register '\"'")?;
     for i in selections_iter {
         num_written = num_written.saturating_add(1);
-        // eprintln!(
-        //     "Got response: {:?}",
-        //     i.map_err(Into::into)?.clone().as_ref()
-        // );
         write!(f, " '{}'", escape(i.map_err(Into::into)?.as_ref()))?;
     }
 
