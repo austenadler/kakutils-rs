@@ -1,6 +1,7 @@
 // use crate::utils;
 use kakplugin::{
-    get_selections, get_selections_with_desc, reg, set_selections_desc, types::Register, KakError,
+    get_register_selections, get_selections, get_selections_with_desc, set_selections_desc,
+    types::Register, KakError,
 };
 use linked_hash_map::LinkedHashMap;
 use linked_hash_set::LinkedHashSet;
@@ -75,19 +76,19 @@ pub fn set<'sel>(options: &'_ Options) -> Result<String, KakError> {
     let (left_selections, right_selections) = match (&left_register, &right_register) {
         (Register::Underscore, r) => {
             let l_selections = get_selections(None)?;
-            let r_selections = reg(*r, None)?;
+            let r_selections = get_register_selections(r)?;
 
             (l_selections, r_selections)
         }
         (l, Register::Underscore) => {
             let r_selections = get_selections(None)?;
-            let l_selections = reg(*l, None)?;
+            let l_selections = get_register_selections(l)?;
 
             (l_selections, r_selections)
         }
         (l, r) => {
-            let l_selections = reg(*l, None)?;
-            let r_selections = reg(*r, None)?;
+            let l_selections = get_register_selections(l)?;
+            let r_selections = get_register_selections(r)?;
 
             (l_selections, r_selections)
         }

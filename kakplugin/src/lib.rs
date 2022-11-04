@@ -22,6 +22,23 @@ pub fn get_selections(keys: Option<&'_ str>) -> Result<Vec<Selection>, KakError>
     response("%val{selections}", keys)
 }
 
+pub fn get_register_selections<R>(r: R) -> Result<Vec<Selection>, KakError>
+where
+    R: AsRef<Register>,
+{
+    cmd(&format!(
+        r#"
+        evaluate-commands -draft %{{
+            execute-keys '\"{}z';
+            echo -quoting shell -to-file {} -- %val{{selections}};
+        }}"#,
+        r.as_ref().kak_escaped(),
+        get_var("kak_response_fifo")?
+    ))?;
+    let selections = shell_words::split(&fs::read_to_string(&get_var("kak_response_fifo")?)?)?;
+    Ok(selections)
+}
+
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
