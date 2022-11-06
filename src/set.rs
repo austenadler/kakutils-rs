@@ -372,6 +372,15 @@ fn parse_arguments(args: &[String]) -> Result<(Register, Operation, Register), K
                 Register::from_str(r)?,
             ))
         }
+        [middle] => {
+            // They gave us one argument like "-"
+            // Default to (current selection)(operation)(^ register (set with Z)) => _-^
+            Ok((
+                Register::Underscore,
+                Operation::from_str(middle)?,
+                Register::Caret,
+            ))
+        }
         _ => Err(KakError::Custom(
             "Invalid arguments to set command".to_string(),
         )),
