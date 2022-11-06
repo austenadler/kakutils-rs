@@ -174,7 +174,7 @@ fn reduce_selections<'sel, 'a>(
         // we can just use contains here
         let key = crate::utils::get_key(
             &swd.content,
-            options.skip_whitespace,
+            !options.skip_whitespace,
             options.regex.as_ref(),
             options.ignore_case,
         );
@@ -298,7 +298,7 @@ fn to_ordered_counts<'sel>(
     for i in selections {
         let key = crate::utils::get_key(
             &i,
-            options.skip_whitespace,
+            !options.skip_whitespace,
             options.regex.as_ref(),
             options.ignore_case,
         );
