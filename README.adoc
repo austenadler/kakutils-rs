@@ -6,7 +6,7 @@
 
 Sort by regular expression or lexicographically, find uniqes, shuffle, or evaluate rust selections without spawning a new command for each selection.
 
-[![asciicast](https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai.svg)](https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai)
+image::https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai.svg[link="https://asciinema.org/a/dIQh9NtLRkzVEENxmij5qBaai"]
 
 == Example
 
@@ -876,12 +876,19 @@ After `uniq`:
 ====
 
 === incr/decr
-Select only unique selections
 
-* `[AMOUNT]` - Optional increment/decrement count
+Increment or decrement selections
 
-== TODO
+* `[AMOUNT]` - Optional increment/decrement count (default: `1`)
 
-* I don't know what will happen with multiline strings and regex
-* Figure out how to change the `no_skip_whitespace` option name in the source
-* Get sort by selections working
+.Example
+[%collapsible]
+====
+Before:
+++++
+++++
+
+After `incr 3`:
+++++
+++++
+====
