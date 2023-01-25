@@ -10,6 +10,7 @@
 #![feature(array_chunks)]
 
 mod box_;
+mod rev;
 mod errors;
 mod incr;
 mod invert;
@@ -69,6 +70,8 @@ enum Commands {
     Decr(incr::Options),
     #[clap(about = "Decrement selections")]
     Incr(incr::Options),
+    #[clap(about = "Reverse selectinos")]
+    Rev(rev::Options)
 }
 
 fn main() {
@@ -119,5 +122,6 @@ fn run() -> Result<String, KakError> {
         Commands::Xlookup(o) => xlookup::xlookup(o),
         Commands::Incr(o) => incr::incr(o, true),
         Commands::Decr(o) => incr::incr(o, false),
+        Commands::Rev(o) => rev::rev(o),
     }
 }
