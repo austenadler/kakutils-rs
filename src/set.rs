@@ -382,7 +382,7 @@ fn parse_arguments(args: &[String]) -> Result<(Register, Operation, Register), K
             ))
         }
         _ => Err(KakError::Custom(
-            "Invalid arguments to set command".to_string(),
+            format!("Invalid arguments to set command: {args:?}"),
         )),
     }?;
 
