@@ -381,9 +381,9 @@ fn parse_arguments(args: &[String]) -> Result<(Register, Operation, Register), K
                 Register::Caret,
             ))
         }
-        _ => Err(KakError::Custom(
-            format!("Invalid arguments to set command: {args:?}"),
-        )),
+        _ => Err(KakError::Custom(format!(
+            "Invalid arguments to set command: {args:?}"
+        ))),
     }?;
 
     if left_register == right_register {
