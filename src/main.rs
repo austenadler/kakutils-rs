@@ -10,12 +10,13 @@
 #![feature(array_chunks)]
 
 mod box_;
-mod rev;
 mod errors;
 mod incr;
 mod invert;
+mod join;
 mod math_eval;
 mod pad;
+mod rev;
 mod set;
 mod shuf;
 mod sort;
@@ -70,8 +71,10 @@ enum Commands {
     Decr(incr::Options),
     #[clap(about = "Decrement selections")]
     Incr(incr::Options),
-    #[clap(about = "Reverse selectinos")]
-    Rev(rev::Options)
+    #[clap(about = "Reverse selections")]
+    Rev(rev::Options),
+    #[clap(about = "Join selections")]
+    Join(join::Options),
 }
 
 fn main() {
@@ -123,5 +126,6 @@ fn run() -> Result<String, KakError> {
         Commands::Incr(o) => incr::incr(o, true),
         Commands::Decr(o) => incr::incr(o, false),
         Commands::Rev(o) => rev::rev(o),
+        Commands::Join(o) => join::join(o),
     }
 }

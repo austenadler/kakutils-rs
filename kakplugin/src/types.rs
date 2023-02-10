@@ -86,6 +86,46 @@ impl SelectionDesc {
         s.right.row - s.left.row + 1
     }
 
+    /// Gets the smallest selection that encompases both selections
+    ///
+    /// ```rust
+    /// let sel1 = SelectionDesc {
+    ///     left: AnchorPosition { row: 10, col: 16 },
+    ///     right: AnchorPosition { row: 1, col: 14 },
+    /// };
+    /// let sel2 = SelectionDesc {
+    ///     left: AnchorPosition { row: 64, col: 10 },
+    ///     right: AnchorPosition { row: 1, col: 100 },
+    /// };
+    /// let expected_bounding = SelectionDesc {
+    ///     left: AnchorPosition { row: 1, col: 14 },
+    ///     right: AnchorPosition { row: 64, col: 27 },
+    /// };
+    /// assert_eq!(sel1.rev().bounding_selection(&sel1), sel1.sort());
+    /// assert_eq!(sel2.bounding_selection(&sel1), expected_bounding.sort());
+    /// assert_eq!(sel2.rev().bounding_selection(&sel1.rev()), expected_bounding.sort());
+    /// assert_eq!(sel2.rev().bounding_selection(&sel1), expected_bounding.sort());
+    /// ```
+    pub fn bounding_selection<SD>(&self, other: SD) -> Self
+    where
+        SD: AsRef<Self>,
+    {
+        // So left is the minimum and right is the maximum
+        let (a, b) = (self.sort(), other.as_ref().sort());
+
+        Self {
+            left: min(a.left, b.left),
+            right: max(a.right, b.right),
+        }
+    }
+
+    pub fn rev(&self) -> Self {
+        Self {
+            left: self.right,
+            right: self.left,
+        }
+    }
+
     #[must_use]
     pub fn sort(&self) -> Self {
         if self.left < self.right {

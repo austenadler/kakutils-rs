@@ -57,10 +57,7 @@ where
 /// # Errors
 ///
 /// Will return `Err` if command fifo could not be opened, read from, or written to
-pub fn get_selections_desc_unordered<S>(keys: Option<S>) -> Result<Vec<SelectionDesc>, KakError>
-where
-    S: AsRef<str>,
-{
+pub fn get_selections_desc_unordered(keys: Option<&str>) -> Result<Vec<SelectionDesc>, KakError> {
     response("%val{selections_desc}", keys.as_ref())?
         .iter()
         .map(|sd| SelectionDesc::from_str(sd))
