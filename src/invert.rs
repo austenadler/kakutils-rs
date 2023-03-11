@@ -29,9 +29,9 @@ pub fn invert(options: &Options) -> Result<String, KakError> {
         // Select everything and split
         (false, false) => "%<a-s>",
         // Select entire line, then remove newline
-        (true, true) => "<a-x><a-s>s^[^\\n]+<ret>",
+        (true, true) => "x<a-s>s^[^\\n]+<ret>",
         // Select entire line, including newline
-        (true, false) => "<a-x><a-s>",
+        (true, false) => "x<a-s>",
     };
 
     let document_descs: Vec<SelectionDesc> = {

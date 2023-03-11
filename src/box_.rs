@@ -70,10 +70,10 @@ fn boxed_selections(options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
 
     let whole_line_selection_command = if options.no_newline {
         // Select everything and only keep non-newlines
-        "<a-x>s^[^\\n]+<ret>"
+        "xs^[^\\n]+<ret>"
     } else {
         // Select everything and split
-        "<a-x><a-s>"
+        "x<a-s>"
     };
 
     // Whole-row selections split on newline
@@ -128,11 +128,11 @@ fn boxed_selections(options: &Options) -> Result<Vec<SelectionDesc>, KakError> {
 
 /// Returns a vec of `selections_desc` of the intersection of the bounding box and the component rows
 ///
-/// This function takes a selection desc, and its whole-row split selections (`<a-x><a-s>`).
+/// This function takes a selection desc, and its whole-row split selections (`x<a-s>`).
 /// For each whole-row (col 1 to max col) selection, it finds the intersection between the min col and max col in `selection_desc`
 ///
 /// * `selection_desc` - The base (possibly multiline) `selection_desc`
-/// * `selections_desc_rows` - Vec of above `selection_desc` split by line (`<a-x><a-s>`)
+/// * `selections_desc_rows` - Vec of above `selection_desc` split by line (`x<a-s>`)
 fn to_boxed_selections<SD1, SD2>(
     selection_desc: SD1,
     selections_desc_rows: &[SD2],
