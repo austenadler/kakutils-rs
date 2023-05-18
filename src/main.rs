@@ -14,6 +14,7 @@ mod errors;
 mod incr;
 mod invert;
 mod join;
+mod keep_every;
 mod math_eval;
 mod pad;
 mod rev;
@@ -75,6 +76,8 @@ enum Commands {
     Rev(rev::Options),
     #[clap(about = "Join selections")]
     Join(join::Options),
+    #[clap(about = "Keep a subset of selections", visible_aliases = &["keep"])]
+    KeepEvery(keep_every::Options),
 }
 
 fn main() {
@@ -127,5 +130,6 @@ fn run() -> Result<String, KakError> {
         Commands::Decr(o) => incr::incr(o, false),
         Commands::Rev(o) => rev::rev(o),
         Commands::Join(o) => join::join(o),
+        Commands::KeepEvery(o) => keep_every::keep_every(o),
     }
 }
