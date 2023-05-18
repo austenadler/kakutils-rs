@@ -1,7 +1,7 @@
 use kakplugin::{get_selections, open_command_fifo, KakError};
 use std::io::Write;
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(short, long, help = "Trim from left")]
     left: bool,

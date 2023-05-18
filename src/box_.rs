@@ -2,7 +2,7 @@ use kakplugin::{
     get_selections_desc, set_selections_desc, AnchorPosition, KakError, SelectionDesc,
 };
 use std::cmp::{max, min};
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     /// Bounding box mode, which selects the largest box to contain everything
     #[clap(short, long, help = "Select the bonding box of all selections")]

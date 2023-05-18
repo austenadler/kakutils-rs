@@ -1,5 +1,5 @@
 use kakplugin::{get_selections, set_selections, KakError};
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options;
 
 pub fn rev(_options: &Options) -> Result<String, KakError> {

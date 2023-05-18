@@ -1,6 +1,6 @@
 use kakplugin::{get_selections_desc_unordered, set_selections_desc, KakError};
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options;
 
 pub fn join(_options: &Options) -> Result<String, KakError> {

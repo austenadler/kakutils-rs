@@ -2,7 +2,7 @@ use crate::utils::split_newlines;
 use kakplugin::{get_selections, set_selections, KakError};
 use std::borrow::Cow;
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(index = 1, help = "Pad with this char", default_value = "0")]
     fill: char,

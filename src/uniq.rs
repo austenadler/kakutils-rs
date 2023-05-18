@@ -6,7 +6,7 @@ use kakplugin::{
 use regex::Regex;
 use std::collections::BTreeSet;
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(index = 1, help = "Optional regex to compare unique elements")]
     regex: Option<Regex>,

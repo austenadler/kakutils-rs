@@ -10,11 +10,10 @@ use std::{borrow::Cow, io::Write, str::FromStr};
 
 const KAK_BUFFER_NAME: &str = "*kakplugin-set*";
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(
-        min_values = 1,
-        max_values = 3,
+        num_args = 1..=3,
         allow_hyphen_values = true,
         help = "Register operation and operand. Empty register is current selection. Example: 'a-b' or '+b'"
     )]

@@ -32,7 +32,7 @@ image = "scratch"
 
 [dependencies]
 regex = "1"
-clap = {version = "3", features = ["derive", "env"]}
+clap = { version = "4", features = ["derive", "env"] }
 alphanumeric-sort = "1"
 # shellwords = {version = "1", path = "../../../git/rust-shellwords/"}
 # shellwords = "1"
@@ -43,6 +43,8 @@ linked-hash-map = "0.5.4"
 linked_hash_set = "0.1.4"
 strum_macros = "0.24"
 strum = { version = "0.24", features = ["derive"] }
+itertools = "0.10.5"
+either = "1.8.1"
 
 [profile.release]
 lto = true

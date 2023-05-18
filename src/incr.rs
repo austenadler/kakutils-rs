@@ -2,7 +2,7 @@ use evalexpr::{eval, Value};
 use kakplugin::{get_selections, set_selections, KakError};
 use std::borrow::Cow;
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(index = 1, help = "Amount to increment/decrement", default_value = "1")]
     amount: isize,

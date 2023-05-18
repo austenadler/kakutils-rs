@@ -3,7 +3,7 @@ use std::{
     io::{BufRead, BufReader, Write},
     process::{Command, Stdio},
 };
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap()]
     command: String,

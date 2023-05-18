@@ -8,7 +8,7 @@ use std::{
     },
 };
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(help = "Register with the lookup table", default_value = "\"")]
     register: Register,

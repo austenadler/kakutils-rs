@@ -1,9 +1,10 @@
 use alphanumeric_sort::compare_str;
+use clap::ArgAction;
 use kakplugin::{self, get_selections_with_desc, open_command_fifo, KakError, SelectionWithDesc};
 use regex::Regex;
 use std::{borrow::Cow, cmp::Ordering, io::Write};
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(index = 1, help = "Optional regex comparison key")]
     regex: Option<Regex>,
@@ -14,7 +15,8 @@ pub struct Options {
     )]
     subselections_register: Option<char>,
     // TODO: Can we invert a boolean? This name is terrible
-    #[clap(short = 'S', long, parse(try_from_str = invert_bool), default_value_t, help = "Do not treat trimmed value of selections when sorting")]
+    // #[clap(short = 'S', long, value_parser = invert_bool, default_value_t, help = "Do not treat trimmed value of selections when sorting")]
+    #[clap(short = 'S', long, action = ArgAction::SetFalse, default_value_t, help = "Do not treat trimmed value of selections when sorting")]
     no_skip_whitespace: bool,
     #[clap(short = 'L', long, help = "Do not sort numbers lexicographically")]
     no_lexicographic_sort: bool,
@@ -24,14 +26,14 @@ pub struct Options {
     ignore_case: bool,
 }
 
-fn invert_bool(s: &str) -> Result<bool, &'static str> {
-    // Invert the boolean
-    match s {
-        "false" => Ok(true),
-        "true" => Ok(false),
-        _ => Err("Unparsable boolean value"),
-    }
-}
+// fn invert_bool(s: &str) -> Result<bool, &'static str> {
+//     // Invert the boolean
+//     match s {
+//         "false" => Ok(true),
+//         "true" => Ok(false),
+//         _ => Err("Unparsable boolean value"),
+//     }
+// }
 
 struct SortableSelection<'a> {
     /// The content of the selection

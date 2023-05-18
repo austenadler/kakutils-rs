@@ -1,7 +1,7 @@
 use kakplugin::{
     get_selections_desc, set_selections_desc, types::MaybeSplit, KakError, SelectionDesc,
 };
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options {
     #[clap(short, long, help = "Do not include newlines")]
     no_newline: bool,

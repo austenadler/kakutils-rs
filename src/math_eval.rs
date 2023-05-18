@@ -2,7 +2,7 @@ use evalexpr::{eval, Value};
 use kakplugin::{get_selections, set_selections, KakError};
 use std::borrow::Cow;
 
-#[derive(clap::StructOpt, Debug)]
+#[derive(clap::Args, Debug)]
 pub struct Options;
 pub fn math_eval(_options: &Options) -> Result<String, KakError> {
     let mut err_count: usize = 0;

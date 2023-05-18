@@ -71,7 +71,7 @@ pub struct SelectionWithSubselections {
 //     }
 // }
 
-#[derive(Clone, PartialEq, PartialOrd, Ord, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq, Debug)]
 pub struct SelectionDesc {
     pub left: AnchorPosition,
     pub right: AnchorPosition,
