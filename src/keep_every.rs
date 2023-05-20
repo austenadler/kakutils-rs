@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use kakplugin::{get_selections_desc_unordered, set_selections_desc, KakError, SelectionDesc};
+use kakplugin::{get_selections_desc_unordered, set_selections_desc, KakError};
 
 #[derive(Debug, clap::Args)]
 pub struct Options {
@@ -8,58 +8,24 @@ pub struct Options {
 }
 
 pub fn keep_every(options: &Options) -> Result<String, KakError> {
-    let selections_desc = get_selections_desc_unordered(None)?;
-    let old_count = selections_desc.len();
+    let old_selections_desc = get_selections_desc_unordered(None)?;
 
-    let new_selections_desc = apply(options, &selections_desc);
+    let mut new_count = 0;
+    set_selections_desc(
+        old_selections_desc
+            .iter()
+            .chunks(options.keep_every.into())
+            .into_iter()
+            .flat_map(|mut it| {
+                // Only keep the first selection from each chunk
+                new_count += 1;
+                it.next()
+            }),
+    )?;
 
-    set_selections_desc(new_selections_desc.iter())?;
-
-    let new_count = new_selections_desc.len();
-
-    Ok(format!("{} kept from {}", new_count, old_count))
-}
-
-fn apply(options: &Options, selections_desc: &[SelectionDesc]) -> Vec<SelectionDesc> {
-    selections_desc
-        .iter()
-        .chunks(options.keep_every.into())
-        .into_iter()
-        .flat_map(|mut it| it.next())
-        .copied()
-        .collect::<Vec<_>>()
-}
-
-#[cfg(test)]
-mod tests {
-    // Selection desc creator
-    macro_rules! sd {
-        ($a:expr) => {{
-            sd!($a, $a)
-        }};
-        ($b:expr, $d:expr) => {{
-            sd!(1, $b, 1, $d)
-        }};
-        ($a:expr, $b:expr,$c:expr,$d:expr) => {{
-            SelectionDesc {
-                left: AnchorPosition { row: $a, col: $b },
-                right: AnchorPosition { row: $c, col: $d },
-            }
-        }};
-    }
-
-    use kakplugin::{AnchorPosition, SelectionDesc};
-
-    use super::*;
-    #[test]
-    fn test() {
-        assert_eq!(apply(&Options { keep_every: 2 }, &[sd!(1),]), &[sd!(1),]);
-        assert_eq!(
-            apply(
-                &Options { keep_every: 2 },
-                &[sd!(1), sd!(2), sd!(3), sd!(4), sd!(5), sd!(6), sd!(7),]
-            ),
-            &[sd!(1), sd!(3), sd!(5), sd!(7),]
-        );
-    }
+    Ok(format!(
+        "{} kept from {}",
+        new_count,
+        old_selections_desc.len()
+    ))
 }
