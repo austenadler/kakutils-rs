@@ -10,11 +10,13 @@ use std::{
 
 #[derive(clap::Args, Debug)]
 pub struct Options {
-    #[clap(help = "Register with the lookup table", default_value = "\"")]
+    #[clap(help = "Register with the lookup table", default_value = "^")]
     register: Register,
 }
 pub fn xlookup(options: &Options) -> Result<String, KakError> {
-    let lookup_table = build_lookuptable(kakplugin::reg(options.register, None)?)?;
+    eprintln!("Getting registers for {options:?}");
+    let lookup_table = build_lookuptable(kakplugin::get_register_selections(options.register)?)?;
+    // let lookup_table = build_lookuptable(kakplugin::reg(options.register, None)?)?;
 
     let selections = get_selections(None)?;
 
