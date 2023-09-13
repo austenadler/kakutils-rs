@@ -1,7 +1,7 @@
 // use kakplugin::Selection;
 use regex::Regex;
 use std::{
-    borrow::{Borrow, Cow},
+    borrow::Cow,
     collections::hash_map::DefaultHasher,
     hash::{Hash, Hasher},
 };
@@ -33,7 +33,7 @@ pub fn get_key<'sel>(
     // If they requested a regex match, set the key to the string slice of that match
     if let Some(regex_match) = (|| {
         // let captures = regex.as_ref()?.captures(&key)?;
-        let captures = regex.as_ref()?.captures(key.borrow())?;
+        let captures = regex.as_ref()?.captures(key)?;
         captures
             .get(1)
             .or_else(|| captures.get(0))
